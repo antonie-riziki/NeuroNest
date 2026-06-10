@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>NIA Admin - Knowledge Input</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Work+Sans:wght@500;600&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "soft-amber": "#FFE8A3",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#c1e8d6",
+                        "background": "#fff8f0",
+                        "secondary-fixed-dim": "#a8cfbd",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#f5ede0",
+                        "on-surface": "#1e1b14",
+                        "on-surface-variant": "#45464c",
+                        "secondary": "#426657",
+                        "inverse-primary": "#c0c6db",
+                        "tertiary-fixed": "#dae4e4",
+                        "inverse-surface": "#343028",
+                        "surface-variant": "#e9e2d5",
+                        "surface-container-low": "#fbf3e6",
+                        "surface": "#fff8f0",
+                        "primary-container": "#141b2b",
+                        "inverse-on-surface": "#f8f0e3",
+                        "on-primary-fixed-variant": "#404758",
+                        "surface-dim": "#e1d9cd",
+                        "on-background": "#1e1b14",
+                        "primary-fixed": "#dce2f7",
+                        "outline": "#76777d",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "primary": "#000000",
+                        "on-secondary-fixed": "#002116",
+                        "surface-bright": "#fff8f0",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#466a5b",
+                        "surface-tint": "#575e70",
+                        "warm-peach": "#FFDCC5",
+                        "error": "#ba1a1a",
+                        "on-tertiary-container": "#7c8686",
+                        "tertiary-fixed-dim": "#bec8c8",
+                        "tertiary-container": "#141d1e",
+                        "tertiary": "#000000",
+                        "surface-container-high": "#efe7db",
+                        "secondary-fixed": "#c4ebd9",
+                        "on-primary-fixed": "#141b2b",
+                        "primary-fixed-dim": "#c0c6db",
+                        "on-secondary-fixed-variant": "#2a4d40",
+                        "on-tertiary-fixed-variant": "#3f4949",
+                        "on-primary-container": "#7d8497",
+                        "surface-container-lowest": "#ffffff",
+                        "calm-teal": "#6B9080",
+                        "safe-white": "#FFFFFF",
+                        "outline-variant": "#c6c6cd",
+                        "on-tertiary-fixed": "#141d1e",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#e9e2d5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "gutter": "24px",
+                        "margin-desktop": "64px",
+                        "touch-target-min": "48px",
+                        "margin-mobile": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "label-sm": ["Work Sans"],
+                        "label-md": ["Work Sans"],
+                        "headline-xl": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        body {
+            background-color: #fff8f0;
+            color: #1e1b14;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #FFDCC5;
+            border-radius: 10px;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen pb-24 md:pb-8">
+    <!-- TopAppBar -->
+    <header
+        class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile h-touch-target-min bg-surface-container-low shadow-sm rounded-b-xl">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-calm-teal">clinical_notes</span>
+            <span class="font-headline-lg-mobile text-headline-lg-mobile text-calm-teal">NIA</span>
+        </div>
+        <div class="hidden md:flex items-center gap-8">
+            <a class="font-label-md text-label-md text-on-surface-variant hover:text-calm-teal transition-colors"
+                href="#">Dashboard</a>
+            <a class="font-label-md text-label-md text-primary transition-colors" href="#">Knowledge</a>
+            <a class="font-label-md text-label-md text-on-surface-variant hover:text-calm-teal transition-colors"
+                href="#">Profile</a>
+        </div>
+        <button
+            class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant/50 transition-colors">
+            <span class="material-symbols-outlined text-on-surface-variant">search</span>
+        </button>
+    </header>
+    <main class="pt-20 px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
+        <!-- Header Section -->
+        <section class="py-8">
+            <h1 class="font-headline-lg text-headline-lg text-primary">Knowledge Management</h1>
+            <p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">
+                Add clinical research, therapy guides, and local resources to NIA's core database. Ensure all medical
+                data is reviewed before ingestion.
+            </p>
+        </section>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+            <!-- Left Column: Knowledge Ingestion Form -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-safe-white p-6 rounded-xl border border-warm-peach shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+                    <h2 class="font-headline-lg-mobile text-headline-lg-mobile mb-6">Ingest New Source</h2>
+                    <form class="space-y-5">
+                        <!-- Upload Area -->
+                        <div
+                            class="group relative border-2 border-dashed border-outline-variant rounded-xl p-8 transition-colors hover:border-calm-teal bg-surface-container-low/30 flex flex-col items-center justify-center cursor-pointer">
+                            <input accept=".pdf,.docx,.txt" class="absolute inset-0 opacity-0 cursor-pointer"
+                                type="file" />
+                            <div
+                                class="w-12 h-12 bg-secondary-container rounded-full flex items-center justify-center mb-3">
+                                <span class="material-symbols-outlined text-calm-teal">upload_file</span>
+                            </div>
+                            <p class="font-label-md text-label-md text-primary">Upload Document</p>
+                            <p class="text-xs text-on-surface-variant mt-1">PDF, DOCX, or TXT (Max 25MB)</p>
+                        </div>
+                        <!-- Title Input -->
+                        <div>
+                            <label class="block font-label-sm text-label-sm text-on-surface-variant mb-1.5 ml-1">Source
+                                Title</label>
+                            <input
+                                class="w-full h-12 px-4 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md"
+                                placeholder="e.g., Sensory Integration Guide" type="text" />
+                        </div>
+                        <!-- Dropdowns Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    class="block font-label-sm text-label-sm text-on-surface-variant mb-1.5 ml-1">Category</label>
+                                <select
+                                    class="w-full h-12 px-4 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md bg-white appearance-none">
+                                    <option>Sensory</option>
+                                    <option>Communication</option>
+                                    <option>Emotional Regulation</option>
+                                    <option>Sleep</option>
+                                    <option>Daily Living</option>
+                                    <option>Motor Skills</option>
+                                    <option>Social Skills</option>
+                                    <option>Caregiver Wellbeing</option>
+                                    <option>Kenyan Clinical Context</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label
+                                    class="block font-label-sm text-label-sm text-on-surface-variant mb-1.5 ml-1">Source
+                                    Tier</label>
+                                <select
+                                    class="w-full h-12 px-4 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md bg-white">
+                                    <option>Tier 1 (Core Evidence)</option>
+                                    <option>Tier 2 (Clinical Guide)</option>
+                                    <option>Tier 3 (Local Context)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Review Status -->
+                        <div>
+                            <label class="block font-label-sm text-label-sm text-on-surface-variant mb-3 ml-1">Clinical
+                                Review Status</label>
+                            <div class="flex flex-wrap gap-3">
+                                <label
+                                    class="flex items-center px-4 py-2 rounded-full border border-outline-variant cursor-pointer hover:bg-surface-variant transition-colors has-[:checked]:bg-secondary-container has-[:checked]:border-secondary-container">
+                                    <input checked="" class="hidden" name="status" type="radio" />
+                                    <span class="font-label-sm text-label-sm">Pending</span>
+                                </label>
+                                <label
+                                    class="flex items-center px-4 py-2 rounded-full border border-outline-variant cursor-pointer hover:bg-surface-variant transition-colors has-[:checked]:bg-secondary-container has-[:checked]:border-secondary-container">
+                                    <input class="hidden" name="status" type="radio" />
+                                    <span class="font-label-sm text-label-sm">Approved</span>
+                                </label>
+                                <label
+                                    class="flex items-center px-4 py-2 rounded-full border border-outline-variant cursor-pointer hover:bg-surface-variant transition-colors has-[:checked]:bg-secondary-container has-[:checked]:border-secondary-container">
+                                    <input class="hidden" name="status" type="radio" />
+                                    <span class="font-label-sm text-label-sm">Rejected</span>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- Action Button -->
+                        <button
+                            class="w-full h-14 bg-calm-teal text-safe-white rounded-xl font-headline-lg-mobile text-headline-lg-mobile hover:opacity-90 transition-opacity active:scale-[0.98] mt-4 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">database</span>
+                            Upload/Ingest
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <!-- Right Column: Knowledge Base List -->
+            <div class="lg:col-span-7 space-y-6">
+                <div
+                    class="bg-safe-white rounded-xl border border-warm-peach shadow-[0_4px_24px_rgba(0,0,0,0.02)] overflow-hidden">
+                    <div
+                        class="p-6 border-b border-warm-peach flex justify-between items-center bg-surface-container-low/30">
+                        <h2 class="font-headline-lg-mobile text-headline-lg-mobile">Recent Ingestions</h2>
+                        <div class="flex gap-2">
+                            <button class="p-2 rounded-full hover:bg-surface-variant transition-colors">
+                                <span class="material-symbols-outlined text-on-surface-variant">filter_list</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Desktop Table -->
+                    <div class="hidden md:block overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-surface-container-low">
+                                <tr>
+                                    <th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase">
+                                        Source</th>
+                                    <th
+                                        class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase text-center">
+                                        Status</th>
+                                    <th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase">
+                                        Date</th>
+                                    <th
+                                        class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase text-right">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-warm-peach">
+                                <tr class="hover:bg-surface-container-low/50 transition-colors">
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center gap-3">
+                                            <span class="material-symbols-outlined text-calm-teal">description</span>
+                                            <div>
+                                                <p class="font-label-md text-label-md text-primary">Nairobi Pediatrics -
+                                                    ADHD Protocol</p>
+                                                <p class="text-xs text-on-surface-variant">Kenyan Clinical Context</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5 text-center">
+                                        <span
+                                            class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold uppercase tracking-wider">Approved</span>
+                                    </td>
+                                    <td class="px-6 py-5 font-body-md text-on-surface-variant">24 Oct 2023</td>
+                                    <td class="px-6 py-5 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <button
+                                                class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-soft-amber/30 transition-colors">
+                                                <span
+                                                    class="material-symbols-outlined text-on-surface-variant text-lg">edit</span>
+                                            </button>
+                                            <button
+                                                class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-error-container/30 transition-colors">
+                                                <span class="material-symbols-outlined text-error text-lg">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-surface-container-low/50 transition-colors">
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center gap-3">
+                                            <span class="material-symbols-outlined text-calm-teal">description</span>
+                                            <div>
+                                                <p class="font-label-md text-label-md text-primary">Early Intervention
+                                                    Milestones</p>
+                                                <p class="text-xs text-on-surface-variant">Communication</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5 text-center">
+                                        <span
+                                            class="px-3 py-1 bg-surface-container-high text-on-surface-variant rounded-full text-[10px] font-bold uppercase tracking-wider">Pending</span>
+                                    </td>
+                                    <td class="px-6 py-5 font-body-md text-on-surface-variant">22 Oct 2023</td>
+                                    <td class="px-6 py-5 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <button
+                                                class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-soft-amber/30 transition-colors">
+                                                <span
+                                                    class="material-symbols-outlined text-on-surface-variant text-lg">edit</span>
+                                            </button>
+                                            <button
+                                                class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-error-container/30 transition-colors">
+                                                <span class="material-symbols-outlined text-error text-lg">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-surface-container-low/50 transition-colors">
+                                    <td class="px-6 py-5">
+                                        <div class="flex items-center gap-3">
+                                            <span class="material-symbols-outlined text-calm-teal">description</span>
+                                            <div>
+                                                <p class="font-label-md text-label-md text-primary">Sleep Hygiene for
+                                                    ASD</p>
+                                                <p class="text-xs text-on-surface-variant">Sleep</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-5 text-center">
+                                        <span
+                                            class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold uppercase tracking-wider">Approved</span>
+                                    </td>
+                                    <td class="px-6 py-5 font-body-md text-on-surface-variant">20 Oct 2023</td>
+                                    <td class="px-6 py-5 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <button
+                                                class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-soft-amber/30 transition-colors">
+                                                <span
+                                                    class="material-symbols-outlined text-on-surface-variant text-lg">edit</span>
+                                            </button>
+                                            <button
+                                                class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-error-container/30 transition-colors">
+                                                <span class="material-symbols-outlined text-error text-lg">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Mobile List View -->
+                    <div class="md:hidden divide-y divide-warm-peach">
+                        <!-- Card 1 -->
+                        <div class="p-4 space-y-3">
+                            <div class="flex justify-between items-start">
+                                <div class="flex gap-3">
+                                    <span class="material-symbols-outlined text-calm-teal mt-1">description</span>
+                                    <div>
+                                        <p class="font-label-md text-label-md text-primary leading-tight">Nairobi
+                                            Pediatrics - ADHD Protocol</p>
+                                        <p class="text-xs text-on-surface-variant mt-1">Kenyan Clinical Context</p>
+                                    </div>
+                                </div>
+                                <span
+                                    class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold">APPROVED</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2">
+                                <p class="text-xs text-on-surface-variant">24 Oct 2023</p>
+                                <div class="flex gap-4">
+                                    <span class="material-symbols-outlined text-on-surface-variant text-xl">edit</span>
+                                    <span class="material-symbols-outlined text-error text-xl">delete</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card 2 -->
+                        <div class="p-4 space-y-3">
+                            <div class="flex justify-between items-start">
+                                <div class="flex gap-3">
+                                    <span class="material-symbols-outlined text-calm-teal mt-1">description</span>
+                                    <div>
+                                        <p class="font-label-md text-label-md text-primary leading-tight">Early
+                                            Intervention Milestones</p>
+                                        <p class="text-xs text-on-surface-variant mt-1">Communication</p>
+                                    </div>
+                                </div>
+                                <span
+                                    class="px-2 py-0.5 bg-surface-container-high text-on-surface-variant rounded-full text-[10px] font-bold">PENDING</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2">
+                                <p class="text-xs text-on-surface-variant">22 Oct 2023</p>
+                                <div class="flex gap-4">
+                                    <span class="material-symbols-outlined text-on-surface-variant text-xl">edit</span>
+                                    <span class="material-symbols-outlined text-error text-xl">delete</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-surface-container-low/30 border-t border-warm-peach text-center">
+                        <button class="font-label-sm text-label-sm text-calm-teal underline">View All 124
+                            Sources</button>
+                    </div>
+                </div>
+                <!-- Guidance Note -->
+                <div class="p-6 bg-soft-amber/20 rounded-xl border border-soft-amber flex gap-4">
+                    <span class="material-symbols-outlined text-on-surface-variant">info</span>
+                    <p class="text-xs md:text-sm text-on-surface-variant">
+                        <strong>Review Policy:</strong> NIA only serves Approved Tier 1 and 2 content to end-users. Tier
+                        3 content is restricted to local community contexts. All PDF ingestions are processed through
+                        NIA's OCR layer for structural validation.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer Section -->
+    <footer class="w-full flex flex-col items-center gap-2 pt-4 pb-20 px-margin-mobile">
+        <p class="font-label-sm text-label-sm text-center text-on-surface-variant opacity-80">
+            NIA is an AI assistant, not a medical professional. Always consult a specialist for clinical advice.
+        </p>
+        <div class="flex gap-4">
+            <a class="font-label-sm text-label-sm text-on-surface-variant underline hover:text-primary" href="#">Privacy
+                Policy</a>
+            <a class="font-label-sm text-label-sm text-on-surface-variant underline hover:text-primary"
+                href="#">Support</a>
+        </div>
+    </footer>
+    <!-- BottomNavBar -->
+    <nav
+        class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-3 bg-safe-white rounded-t-xl shadow-[0_-4px_24px_rgba(0,0,0,0.05)] border-t border-warm-peach">
+        <div
+            class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-transform active:scale-90 duration-150">
+            <span class="material-symbols-outlined">chat_bubble</span>
+            <span class="font-label-sm text-label-sm">Chat</span>
+        </div>
+        <div
+            class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 transition-transform active:scale-90 duration-150">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">database</span>
+            <span class="font-label-sm text-label-sm">Knowledge</span>
+        </div>
+        <div
+            class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-transform active:scale-90 duration-150">
+            <span class="material-symbols-outlined">account_circle</span>
+            <span class="font-label-sm text-label-sm">Profile</span>
+        </div>
+    </nav>
+    <script>
+        // Micro-interaction for form labels and feedback
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('scale-[1.01]');
+                input.style.transition = 'all 0.3s ease';
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.classList.remove('scale-[1.01]');
+            });
+        });
+
+        // Simulating the "Ingest" action with a simple pulse effect on click
+        const ingestBtn = document.querySelector('button.bg-calm-teal');
+        if (ingestBtn) {
+            ingestBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                ingestBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Processing...';
+                setTimeout(() => {
+                    ingestBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Success';
+                    setTimeout(() => {
+                        ingestBtn.innerHTML = '<span class="material-symbols-outlined">database</span> Upload/Ingest';
+                    }, 2000);
+                }, 1500);
+            });
+        }
+    </script>
+</body>
+
+</html>
