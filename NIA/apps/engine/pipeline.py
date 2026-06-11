@@ -26,9 +26,9 @@ warnings.filterwarnings("ignore")
 
 
 
-def get_qa_chain(source_dir=None, use_global_db=False):
+def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, caregiver_profile=None, child_id=None):
     """
-    Create QA chain with proper error handling
+    Create QA chain with proper error handling and personalization
     """
 
     try:
@@ -39,31 +39,58 @@ def get_qa_chain(source_dir=None, use_global_db=False):
             raise ValueError(f"Model {model_type} not configured properly")
 
         vector_store = None
-        if use_global_db:
-            db_path = os.path.join(settings.BASE_DIR, 'vector_store_db')
-            if not os.path.exists(db_path):
-                raise ValueError("Global vector store not found. Please run 'python manage.py train_rag' first.")
-            vector_store = FAISS.load_local(db_path, embeddings, allow_dangerous_deserialization=True)
+        global_db_path = os.path.join(settings.BASE_DIR, 'vector_store_db', 'global')
+        os.makedirs(os.path.dirname(global_db_path), exist_ok=True)
 
+        # 1. Initialize or load the global database
+        if os.path.exists(global_db_path):
+            vector_store = FAISS.load_local(global_db_path, embeddings, allow_dangerous_deserialization=True)
+        else:
+            global_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', 'global')
+            os.makedirs(global_docs_dir, exist_ok=True)
+            docs = load_documents(global_docs_dir)
+            if not docs:
+                docs = [Document(page_content="NIA Global Knowledge Base - Neurodevelopmental and neurodiversity support platform developed by Beyond Brain Barriers.", metadata={"source": "system"})]
+            
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
+            splits = text_splitter.split_documents(docs)
+            vector_store = FAISS.from_documents(splits, embeddings)
+            vector_store.save_local(global_db_path)
+
+        # 2. Load and merge child-specific database if in personalized mode
+        if child_id:
+            child_db_path = os.path.join(settings.BASE_DIR, 'vector_store_db', f'child_{child_id}')
+            child_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', f'child_{child_id}')
+            os.makedirs(child_docs_dir, exist_ok=True)
+            
+            child_vector_store = None
+            if os.path.exists(child_db_path):
+                child_vector_store = FAISS.load_local(child_db_path, embeddings, allow_dangerous_deserialization=True)
+            else:
+                docs = load_documents(child_docs_dir)
+                if docs:
+                    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
+                    splits = text_splitter.split_documents(docs)
+                    child_vector_store = FAISS.from_documents(splits, embeddings)
+                    child_vector_store.save_local(child_db_path)
+
+            if child_vector_store:
+                # Merge child documents into our vector store retrieval context
+                vector_store.merge_from(child_vector_store)
+
+        # 3. Add dynamic source directory docs if passed directly
         if source_dir:
             docs = load_documents(source_dir)
             if docs:
                 text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
                 splits = text_splitter.split_documents(docs)
-                if vector_store:
-                    vector_store.add_documents(splits)
-                else:
-                    vector_store = FAISS.from_documents(splits, embeddings)
-            elif not vector_store:
-                raise ValueError("No documents found in the specified sources and no global db available.")
-
-        if not vector_store:
-             raise ValueError("Failed to initialize vector store: no global DB and no source documents provided.")
+                vector_store.add_documents(splits)
 
         retriever = vector_store.as_retriever(search_kwargs={"k": 5})
 
         prompt = PromptTemplate(
-            template=prompt_template_func(), input_variables=["context", "question"]
+            template=prompt_template_func(child_profile, caregiver_profile),
+            input_variables=["context", "question"]
         )
 
         response = RetrievalQA.from_chain_type(
@@ -92,8 +119,62 @@ def query_system(query: str, qa_chain):
         result = qa_chain({"query": query})
         if not result["result"] or "don't know" in result["result"].lower():
             return "The answer could not be found in the provided documents"
-        return f"NIA: {result['result']} \nSources: {[s.metadata['source'] for s in result['source_documents']]}"
+        return f"NIA: {result['result']}"
     except Exception as e:
         return f"Error processing query: {e}"
+
+
+def update_vector_store_for_child(child_id):
+    """
+    Rebuild the FAISS database for a specific child from their media files.
+    """
+    try:
+        from django.conf import settings
+        llm, embeddings = load_model()
+        if not embeddings:
+            return False
+
+        child_db_path = os.path.join(settings.BASE_DIR, 'vector_store_db', f'child_{child_id}')
+        child_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', f'child_{child_id}')
+        os.makedirs(child_docs_dir, exist_ok=True)
+
+        docs = load_documents(child_docs_dir)
+        if docs:
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
+            splits = text_splitter.split_documents(docs)
+            vector_store = FAISS.from_documents(splits, embeddings)
+            vector_store.save_local(child_db_path)
+            return True
+    except Exception as e:
+        print(f"Error updating child vector store: {e}")
+    return False
+
+
+def update_global_vector_store():
+    """
+    Rebuild the global FAISS database from media files.
+    """
+    try:
+        from django.conf import settings
+        llm, embeddings = load_model()
+        if not embeddings:
+            return False
+
+        global_db_path = os.path.join(settings.BASE_DIR, 'vector_store_db', 'global')
+        global_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', 'global')
+        os.makedirs(global_docs_dir, exist_ok=True)
+
+        docs = load_documents(global_docs_dir)
+        if not docs:
+            docs = [Document(page_content="NIA Global Knowledge Base - Neurodevelopmental and neurodiversity support platform developed by Beyond Brain Barriers.", metadata={"source": "system"})]
+            
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
+        splits = text_splitter.split_documents(docs)
+        vector_store = FAISS.from_documents(splits, embeddings)
+        vector_store.save_local(global_db_path)
+        return True
+    except Exception as e:
+        print(f"Error updating global vector store: {e}")
+    return False
 
 

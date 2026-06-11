@@ -170,6 +170,12 @@ def select_child(request, child_id):
     request.session['active_child_id'] = str(child_id)
     messages.success(request, "Active profile switched.")
     
+    next_page = request.GET.get('next')
+    if next_page == 'chat':
+        return redirect('chat')
+    elif next_page == 'knowledgebase':
+        return redirect('knowledgebase')
+        
     # Redirect back to where the request came from or child_profile
     referer = request.META.get('HTTP_REFERER')
     if referer:

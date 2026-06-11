@@ -1,4 +1,4 @@
-def prompt_template_func():
+def prompt_template_func(child_profile=None, caregiver_profile=None):
     PROMPT_TEMPLATE = """
 
         # NIA SYSTEM PROMPT
@@ -412,4 +412,9 @@ def prompt_template_func():
         
         """
 
-    return PROMPT_TEMPLATE
+    child_section = child_profile if child_profile else "No active child profile context."
+    caregiver_section = caregiver_profile if caregiver_profile else "No caregiver profile context."
+    
+    template = PROMPT_TEMPLATE.replace("CHILD_PROFILE", f"CHILD_PROFILE:\n{child_section}")
+    template = template.replace("CAREGIVER_PROFILE", f"CAREGIVER_PROFILE:\n{caregiver_section}")
+    return template

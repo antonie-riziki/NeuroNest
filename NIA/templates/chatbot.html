@@ -184,14 +184,17 @@
         <section class="mb-6">
             <div class="bg-safe-white rounded-xl p-5 border border-warm-peach pill-shadow flex items-start gap-4">
                 <div
-                    class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-surface-container-high border-2 border-secondary-fixed">
-                    <img alt="Child Profile" class="w-full h-full object-cover"
-                        data-alt="A soft-focus, heartwarming portrait of a young child with a peaceful expression, playing with colorful sensory toys in a brightly lit, modern minimalist nursery. The lighting is warm and natural, emphasizing a calm and supportive atmosphere. The color palette features soft teals and warm peach tones, reflecting a nurturing and gentle design aesthetic."
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnsKqoqldvBzfAgP6P1bO7QZgFuZNkSeQLKIRdInRAxuulCOLidO9XdB-0Jz4rsafwSAaSI8RX8VxQWoGJETbieQBBCK2OlH5yy-Kz2c3Hlxa4i_0CJVIKUbj_Z7zaavG6NPSl1lNEuO-U-XLgz0IeQN14uosaubQsPD7ct4RAK3Eyhvhw0WKUbkxwoBDufQ0khcVfVLlDQcXG8nKK4LZ0tmTBRNsQtA91mGEYMNA6bvcMTdIxIK8skXG4gdXMmLa4bNDGiLsPQaB1" />
+                    class="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-surface-container-high border-2 border-secondary-fixed flex items-center justify-center text-calm-teal font-bold text-xl">
+                    {% if active_child.profile_picture_url %}
+                    <img alt="{{ active_child.name }}" class="w-full h-full object-cover"
+                        src="{{ active_child.profile_picture_url }}" />
+                    {% else %}
+                    {{ active_child.name|slice:":1" }}
+                    {% endif %}
                 </div>
                 <div class="flex-grow">
                     <div class="flex justify-between items-center mb-1">
-                        <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Leo</h2>
+                        <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">{{ active_child.name }}</h2>
                         <span
                             class="bg-secondary-container text-on-secondary-container px-3 py-0.5 rounded-full font-label-sm text-label-sm uppercase">Active
                             Profile</span>
@@ -200,19 +203,18 @@
                         <div class="flex items-center gap-2">
                             <span class="material-symbols-outlined text-calm-teal text-[18px]"
                                 data-icon="cake">cake</span>
-                            <span class="font-label-md text-label-md">6 Years</span>
+                            <span class="font-label-md text-label-md">{{ active_child.dob }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="material-symbols-outlined text-calm-teal text-[18px]"
                                 data-icon="language">language</span>
-                            <span class="font-label-md text-label-md">English, Non-verbal</span>
+                            <span class="font-label-md text-label-md">{{ active_child.language }}</span>
                         </div>
                         <div class="col-span-2 flex items-center gap-2 pt-1 border-t border-surface-container-low">
                             <span class="material-symbols-outlined text-soft-amber text-[18px]"
                                 data-icon="priority_high"
                                 style="font-variation-settings: 'FILL' 1;">priority_high</span>
-                            <span class="font-label-md text-label-md text-on-surface-variant">Focus: Transitions &amp;
-                                Sensory Overload</span>
+                            <span class="font-label-md text-label-md text-on-surface-variant">Focus: {{ active_child.concern }}</span>
                         </div>
                     </div>
                 </div>
@@ -221,32 +223,18 @@
         <!-- Chat Area -->
         <section class="flex-grow flex flex-col space-y-4 mb-6" id="chat-container">
             <!-- NIA Message -->
-            <div class="flex items-end gap-3 max-w-[85%] self-start">
+            <div class="flex items-end gap-3 max-w-[85%] self-start animate-fade-in">
                 <div class="w-8 h-8 rounded-full bg-calm-teal flex items-center justify-center flex-shrink-0">
                     <span class="material-symbols-outlined text-safe-white text-[16px]" data-icon="smart_toy"
                         style="font-variation-settings: 'FILL' 1;">smart_toy</span>
                 </div>
                 <div
                     class="bg-secondary-container/30 border border-secondary-fixed text-on-surface p-4 rounded-2xl rounded-bl-none shadow-sm">
-                    <p class="font-body-md text-body-md">Hello! I'm NIA, your assistant. I've noted Leo is having some
-                        difficulty with transitions today. How can I help you support him right now?</p>
-                </div>
-            </div>
-            <!-- User Message -->
-            <div class="flex items-end gap-3 max-w-[85%] self-end flex-row-reverse">
-                <div
-                    class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0">
-                    <span class="material-symbols-outlined text-on-surface-variant text-[16px]"
-                        data-icon="person">person</span>
-                </div>
-                <div
-                    class="bg-safe-white border border-warm-peach text-on-surface p-4 rounded-2xl rounded-br-none shadow-sm">
-                    <p class="font-body-md text-body-md">He's having a hard time leaving the park. Every time I say it's
-                        time to go, he starts to get very upset.</p>
+                    <p class="font-body-md text-body-md">Hello! I'm NIA, your personalized support assistant. I have loaded the profile for {{ active_child.name }}. How can I help you support them today?</p>
                 </div>
             </div>
             <!-- NIA Thinking/Response Loading State -->
-            <div class="flex items-end gap-3 max-w-[85%] self-start opacity-70" id="loading-state">
+            <div class="flex items-end gap-3 max-w-[85%] self-start opacity-70 hidden" id="loading-state">
                 <div class="w-8 h-8 rounded-full bg-calm-teal flex items-center justify-center flex-shrink-0">
                     <span class="material-symbols-outlined text-safe-white text-[16px]" data-icon="smart_toy"
                         style="font-variation-settings: 'FILL' 1;">smart_toy</span>
@@ -297,9 +285,11 @@
                         <span class="material-symbols-outlined" data-icon="mic">mic</span>
                     </button>
                     <input
+                        id="chat-input"
                         class="flex-grow bg-transparent border-none focus:ring-0 px-2 font-body-md placeholder:text-outline/60"
-                        placeholder="Type a message..." type="text" />
+                        placeholder="Type a message for NIA..." type="text" />
                     <button
+                        id="send-btn"
                         class="bg-calm-teal text-safe-white px-6 py-2 rounded-full font-label-md text-label-md flex items-center gap-2 hover:bg-secondary transition-colors mr-1">
                         Send
                         <span class="material-symbols-outlined text-[18px]" data-icon="send"
@@ -326,43 +316,132 @@
     <nav
         class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-3 bg-safe-white dark:bg-surface-container-lowest border-t border-warm-peach dark:border-outline-variant shadow-[0_-4px_24px_rgba(0,0,0,0.05)] rounded-t-xl">
         <a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-4 py-1 scale-95 active:scale-90 transition-transform duration-150"
-            href="#">
+            href="{% url 'chat' %}">
             <span class="material-symbols-outlined" data-icon="chat_bubble"
                 style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
             <span class="font-label-sm text-label-sm">Chat</span>
         </a>
         <a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-colors duration-150"
-            href="#">
+            href="{% url 'knowledgebase' %}">
             <span class="material-symbols-outlined" data-icon="database">database</span>
             <span class="font-label-sm text-label-sm">Knowledge</span>
         </a>
         <a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-colors duration-150"
-            href="#">
+            href="{% url 'child_profile' %}">
             <span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
             <span class="font-label-sm text-label-sm">Profile</span>
         </a>
     </nav>
     <script>
-        // Simple micro-interaction for suggested chips
-        document.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.add('scale-95');
-                setTimeout(() => btn.classList.remove('scale-95'), 150);
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const loadingState = document.getElementById('loading-state');
+
+        // Auto-scroll to bottom of page/container
+        function scrollToBottom() {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
             });
+        }
+        scrollToBottom();
+
+        // Dynamic message appending
+        function appendMessage(sender, text) {
+            const msgDiv = document.createElement('div');
+            if (sender === 'user') {
+                msgDiv.className = "flex items-end gap-3 max-w-[85%] self-end flex-row-reverse animate-fade-in";
+                msgDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-on-surface-variant text-[16px]" data-icon="person">person</span>
+                    </div>
+                    <div class="bg-safe-white border border-warm-peach text-on-surface p-4 rounded-2xl rounded-br-none shadow-sm">
+                        <p class="font-body-md text-body-md">${text}</p>
+                    </div>
+                `;
+            } else {
+                msgDiv.className = "flex items-end gap-3 max-w-[85%] self-start animate-fade-in";
+                msgDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-calm-teal flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-safe-white text-[16px]" data-icon="smart_toy" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                    </div>
+                    <div class="bg-secondary-container/30 border border-secondary-fixed text-on-surface p-4 rounded-2xl rounded-bl-none shadow-sm">
+                        <p class="font-body-md text-body-md">${text}</p>
+                    </div>
+                `;
+            }
+            // Append before loading state
+            chatContainer.insertBefore(msgDiv, loadingState);
+            scrollToBottom();
+        }
+
+        // Send message function
+        async function triggerSendMessage() {
+            const query = chatInput.value.trim();
+            if (!query) return;
+
+            // Clear input
+            chatInput.value = '';
+
+            // Append user message
+            appendMessage('user', query);
+
+            // Show typing indicator
+            loadingState.classList.remove('hidden');
+            scrollToBottom();
+
+            try {
+                const response = await fetch("{% url 'chat' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ message: query })
+                });
+                const data = await response.json();
+                
+                // Hide typing indicator
+                loadingState.classList.add('hidden');
+
+                if (data.response) {
+                    appendMessage('nia', data.response);
+                } else if (data.error) {
+                    appendMessage('nia', "Error: " + data.error);
+                } else {
+                    appendMessage('nia', "Sorry, I couldn't get a proper response.");
+                }
+            } catch (error) {
+                loadingState.classList.add('hidden');
+                appendMessage('nia', "Connection error. Please try again later.");
+                console.error("Error communicating with RAG engine:", error);
+            }
+        }
+
+        // Button click listener
+        sendBtn.addEventListener('click', triggerSendMessage);
+
+        // Input enter key listener
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                triggerSendMessage();
+            }
         });
 
-        // Auto-scroll to bottom of chat
-        const chatContainer = document.getElementById('chat-container');
-        window.scrollTo(0, document.body.scrollHeight);
-
-        // Simulate NIA typing removal after a delay (UX demo)
-        setTimeout(() => {
-            const loading = document.getElementById('loading-state');
-            if (loading) {
-                // In a real app, this would be replaced by actual response
-                // loading.remove(); 
+        // Suggestion chips listeners
+        document.querySelectorAll('button').forEach(btn => {
+            // If it's a chip (not Send and not Mic)
+            if (btn.classList.contains('flex-shrink-0') && btn.innerHTML.trim() !== 'Send') {
+                btn.addEventListener('click', () => {
+                    btn.classList.add('scale-95');
+                    setTimeout(() => btn.classList.remove('scale-95'), 150);
+                    chatInput.value = btn.innerText.trim();
+                    triggerSendMessage();
+                });
             }
-        }, 5000);
+        });
     </script>
 </body>
 
