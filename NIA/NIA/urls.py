@@ -17,6 +17,21 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from apps.core.views import auth
+from apps.engine.views import knowledgebase, chat
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Core
+    path('', auth, name='auth'),
+
+    # Engine
+    path('knowledgebase/', knowledgebase, name='knowledgebase'),
+    path('chat/', chat, name='chat'),
+
+    # API
+    path('api/chatbot/', chatbot_api, name='chatbot_api'),
+    path('api/knowledgebase/', knowledgebase_api, name='knowledgebase_api'),
+    
 ]
