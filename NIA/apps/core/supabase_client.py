@@ -1,4 +1,5 @@
 import json
+import ssl
 import urllib.request
 import urllib.error
 import uuid
@@ -32,8 +33,11 @@ class SupabaseClient:
                 
         req = urllib.request.Request(url, data=data, headers=req_headers, method=method)
         
+        # Bypass SSL verification to avoid certificate issues on macOS Python installations
+        ssl_context = ssl._create_unverified_context()
+        
         try:
-            with urllib.request.urlopen(req) as response:
+            with urllib.request.urlopen(req, context=ssl_context) as response:
                 resp_data = response.read()
                 if is_json and resp_data:
                     return json.loads(resp_data.decode('utf-8'))
