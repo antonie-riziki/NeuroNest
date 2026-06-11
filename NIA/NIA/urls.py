@@ -31,7 +31,7 @@ urlpatterns = [
     path('chat/', chat, name='chat'),
 
     # API
-    path('api/chatbot/', chatbot_api, name='chatbot_api'),
-    path('api/knowledgebase/', knowledgebase_api, name='knowledgebase_api'),
+    # path('api/chatbot/', chatbot_api, name='chatbot_api'),
+    # path('api/knowledgebase/', knowledgebase_api, name='knowledgebase_api'),
     
 ]

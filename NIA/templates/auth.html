@@ -178,7 +178,7 @@
         </div>
     </div>
     <!-- Main Content Canvas -->
-    <main class="relative z-10 w-full max-w-md pt-24 pb-12 px-margin-mobile flex flex-col items-center">
+    <main class="relative z-10 w-full max-w-7xl max-w-md pt-24 pb-12 px-margin-mobile flex flex-col items-center">
         <!-- Welcome Header -->
         <div class="text-center mb-8">
             <h2 class="font-headline-lg text-headline-lg mb-2">Welcome Back</h2>
@@ -186,7 +186,7 @@
         </div>
         <!-- Auth Card -->
         <div
-            class="w-full bg-safe-white rounded-xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.05)] border border-warm-peach overflow-hidden">
+            class="w-full max-w-7xl bg-safe-white rounded-xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.05)] border border-warm-peach overflow-hidden">
             <!-- Tab Switcher -->
             <div class="flex border-b border-surface-container">
                 <button
@@ -374,7 +374,8 @@
             <a class="font-label-sm text-label-sm text-on-surface-variant underline hover:text-calm-teal"
                 href="#">Support</a>
         </div>
-        <p class="font-label-sm text-label-sm text-on-surface-variant mt-2">© 2024 NIA Neurodiversity Assistant</p>
+        <p class="font-label-sm text-label-sm text-on-surface-variant mt-2">© {% now 'Y' %} NIA Neurodiversity Assistant
+        </p>
     </footer>
     <script>
         function switchTab(tab) {
