@@ -151,19 +151,33 @@
                 <span class="material-symbols-outlined text-on-surface-variant"
                     data-icon="notifications">notifications</span>
             </button>
-            <div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center">
-                <span class="text-on-secondary-fixed font-bold text-xs">SC</span>
-            </div>
+            <a href="{% url 'logout' %}" class="flex items-center gap-1 text-on-surface-variant hover:text-error transition-colors p-2 rounded-full hover:bg-surface-variant/50" title="Log Out">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
         </div>
     </header>
     <main class="mt-20 px-margin-mobile max-w-screen-xl mx-auto space-y-8">
+        <!-- Messages Alert Container -->
+        {% if messages %}
+        <div class="mt-4 space-y-2">
+            {% for message in messages %}
+            <div class="p-4 rounded-xl font-label-md text-label-md {% if message.tags == 'success' %}bg-secondary-container text-on-secondary-container border border-secondary{% elif message.tags == 'warning' %}bg-soft-amber/30 text-on-surface border border-soft-amber{% else %}bg-error-container text-on-error-container border border-error{% endif %} flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">
+                    {% if message.tags == 'success' %}check_circle{% elif message.tags == 'warning' %}warning{% else %}error{% endif %}
+                </span>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <!-- Caregiver Summary Section -->
         <section class="mt-6">
             <div
                 class="bg-safe-white rounded-xl p-6 border border-warm-peach pillow-shadow flex items-center justify-between">
                 <div class="space-y-1">
-                    <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Hello, Sarah</h2>
-                    <p class="font-label-md text-label-md text-on-surface-variant">Caregiver ID: #NIA-4492 • <span
+                    <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Hello, {{ caregiver_name }}</h2>
+                    <p class="font-label-md text-label-md text-on-surface-variant">Caregiver ID: #{{ caregiver_id|slice:":8" }} • <span
                             class="text-calm-teal">Premium Member</span></p>
                 </div>
                 <div class="hidden md:flex flex-col items-end">
@@ -180,6 +194,7 @@
             <div class="flex items-center justify-between">
                 <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">My Children</h3>
                 <button
+                    onclick="toggleModal(true)"
                     class="flex items-center gap-2 bg-calm-teal text-on-primary font-label-md text-label-md px-4 py-2.5 rounded-full hover:opacity-90 transition-all shadow-sm">
                     <span class="material-symbols-outlined text-base" data-icon="add">add</span>
                     Add New Child
@@ -187,141 +202,93 @@
             </div>
             <!-- Child Switcher / Horizontal List -->
             <div class="flex gap-4 overflow-x-auto custom-scroll py-2 -mx-2 px-2">
-                <button
-                    class="flex-shrink-0 flex items-center gap-3 bg-primary text-safe-white px-5 py-3 rounded-full shadow-md">
-                    <div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden">
+                {% for child in children %}
+                <a href="{% url 'select_child' child.id %}"
+                    class="flex-shrink-0 flex items-center gap-3 {% if child.id|stringformat:"s" == active_child_id|stringformat:"s" %}bg-primary text-safe-white{% else %}bg-safe-white border border-warm-peach text-on-surface hover:bg-surface-container-high{% endif %} px-5 py-3 rounded-full shadow-md transition-all duration-150">
+                    <div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden flex items-center justify-center">
+                        {% if child.profile_picture_url %}
                         <img class="w-full h-full object-cover"
-                            data-alt="Close-up portrait of a young boy with curly hair smiling softly against a neutral background. The lighting is warm and natural, reinforcing a calm and supportive atmosphere. The aesthetic is professional and high-key, matching the serene healthcare theme of the app."
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXSlhHaJiDhD7kKRZgNXp2iPJjJoy6ADQS0CU_1ifEx8JGiIWQDl5av4C4BumGXRVJHiDHTh1-bEAD6ZAsie5DrdjyskuBbl_S0iIP5AruDQ2ne76Og-Y3Sustjtif0K0WKCw1vlAoPdQDp0r1o1yc9CID9H7yvTeiioE6glw2oo7tCtmGIR2L54mNES7LfqZA3GopsGdbegsh7CckjpA-gC58TjMAprtO1wlO1130ym4q8y7L4ms1_LkC9ODPI9uWg8v7SfoF_wTn" />
+                            src="{{ child.profile_picture_url }}" alt="{{ child.name }}" />
+                        {% else %}
+                        <span class="text-on-surface font-bold text-sm">{{ child.name|slice:":1" }}</span>
+                        {% endif %}
                     </div>
-                    <span class="font-label-md text-label-md">Leo</span>
-                </button>
+                    <span class="font-label-md text-label-md">{{ child.name }}</span>
+                </a>
+                {% endfor %}
                 <button
-                    class="flex-shrink-0 flex items-center gap-3 bg-safe-white border border-warm-peach text-on-surface px-5 py-3 rounded-full hover:bg-surface-container-high transition-colors">
-                    <div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden">
-                        <img class="w-full h-full object-cover"
-                            data-alt="Portrait of a young girl with braided hair and a peaceful expression, set against a soft blurred indoor playground. The lighting is diffused and gentle, evoking a sense of safety and tranquility. The color palette consists of soft pastels and warm tones to maintain visual cohesion with the UI design system."
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdKKMa1yiKjFVonVs1DjJc5MLG4b_jXOWvC_5-bO15vYDRcMRR_rp1x_Nt2lqRq79bDGTWyQPqAPktnIvFNGOY2wiZy4Wtc7eUbQJvm2tTZvIEeWrYbqbYvi7HWKDTarMb4dty9wB6nQLbb_junk0tzl5Q0Yo20pVLntsmzNCEkxqf5Lw-2hwLplL1pxTQU7kkN_n4NXV21B641XygNQ0xvinhiDQP0xlDSyGOq3M0wNo2RnLAj032t1rmJJ6dJO2VkfeOTOeGzGHi" />
-                    </div>
-                    <span class="font-label-md text-label-md">Amara</span>
-                </button>
-                <button
+                    onclick="toggleModal(true)"
                     class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full border-2 border-dashed border-outline-variant text-outline hover:border-calm-teal hover:text-calm-teal transition-all">
                     <span class="material-symbols-outlined" data-icon="add">add</span>
                 </button>
             </div>
             <!-- Profile Cards Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Profile Card: Leo -->
+                {% for child in children %}
+                <!-- Profile Card: {{ child.name }} -->
                 <div
-                    class="bg-safe-white rounded-xl border border-warm-peach p-6 pillow-shadow space-y-6 relative overflow-hidden group">
+                    class="bg-safe-white rounded-xl border {% if child.id|stringformat:"s" == active_child_id|stringformat:"s" %}border-calm-teal ring-2 ring-calm-teal/20{% else %}border-warm-peach{% endif %} p-6 pillow-shadow space-y-6 relative overflow-hidden group">
                     <div
                         class="absolute top-0 right-0 w-24 h-24 bg-soft-amber opacity-10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110">
                     </div>
                     <div class="flex justify-between items-start">
                         <div class="flex gap-4">
+                            {% if child.profile_picture_url %}
                             <img class="w-16 h-16 rounded-xl object-cover shadow-sm"
-                                data-alt="Close-up portrait of a young boy with curly hair smiling softly against a neutral background. The lighting is warm and natural, reinforcing a calm and supportive atmosphere. The aesthetic is professional and high-key, matching the serene healthcare theme of the app."
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQhkUVBDcoQWAGF_s-8bg_VfrC9sQat0YH0WMO6LlXLPCYzhOg2saHtuS9wjX83POfF6rl_o6tLRM6BheGC6w5c8YkoJlt4G09yAK4UuJa63tMC7KFvFqRYrRyyWhPhzn98cWuHaa6iPrfoebqWSbUwIFaZgOvKq5JKza4g7KkqN-HTIdy9E2cuabYBaZuNXX13Rwrhw2Lf8MATQuVGWEQpit8jQ-8kFF6Kab120xQjuF0eg34a5ohBAGrFWSTV35ZzsFPrNu200VE" />
+                                src="{{ child.profile_picture_url }}" alt="{{ child.name }}" />
+                            {% else %}
+                            <div class="w-16 h-16 rounded-xl bg-calm-teal flex items-center justify-center text-white font-bold text-xl shadow-sm">
+                                {{ child.name|slice:":1" }}
+                            </div>
+                            {% endif %}
                             <div>
-                                <h4 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Leo</h4>
-                                <p class="font-label-md text-label-md text-on-surface-variant">6 years • Male</p>
+                                <h4 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{{ child.name }}</h4>
+                                <p class="font-label-md text-label-md text-on-surface-variant">{{ child.dob }}</p>
                             </div>
                         </div>
                         <div class="flex gap-1">
-                            <button
-                                class="p-2 rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant">
-                                <span class="material-symbols-outlined text-xl" data-icon="edit">edit</span>
-                            </button>
-                            <button
-                                class="p-2 rounded-full hover:bg-error-container hover:text-error transition-colors text-on-surface-variant">
-                                <span class="material-symbols-outlined text-xl" data-icon="archive">archive</span>
-                            </button>
+                            <a href="{% url 'select_child' child.id %}"
+                                class="p-2 rounded-full {% if child.id|stringformat:"s" == active_child_id|stringformat:"s" %}bg-calm-teal text-white{% else %}hover:bg-surface-variant text-on-surface-variant{% endif %} transition-colors" title="Select Profile">
+                                <span class="material-symbols-outlined text-xl">check_circle</span>
+                            </a>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div class="space-y-1">
                             <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tighter">
                                 Primary Concern</p>
-                            <p class="font-label-md text-label-md text-on-surface">Autism Spectrum</p>
+                            <p class="font-label-md text-label-md text-on-surface">{{ child.concern }}</p>
                         </div>
                         <div class="space-y-1">
                             <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tighter">
                                 Language</p>
-                            <p class="font-label-md text-label-md text-on-surface">English / Spanish</p>
+                            <p class="font-label-md text-label-md text-on-surface">{{ child.language }}</p>
                         </div>
                     </div>
                     <div class="space-y-3">
                         <div class="flex justify-between items-end">
-                            <p class="font-label-sm text-label-sm text-on-surface-variant">Profile Completion</p>
-                            <p class="font-label-md text-label-md text-calm-teal">85%</p>
+                            <p class="font-label-sm text-label-sm text-on-surface-variant">Profile Status</p>
+                            <p class="font-label-md text-label-md text-calm-teal">Active</p>
                         </div>
                         <div class="h-3 w-full bg-surface-container-high rounded-full overflow-hidden">
-                            <div class="h-full bg-calm-teal rounded-full" style="width: 85%"></div>
+                            <div class="h-full bg-calm-teal rounded-full" style="width: 100%"></div>
                         </div>
                     </div>
                     <div class="pt-4 border-t border-surface-container-highest flex items-center justify-between">
                         <div class="flex items-center gap-2 text-on-surface-variant">
                             <span class="material-symbols-outlined text-base" data-icon="history">history</span>
-                            <span class="font-label-sm text-label-sm">Last check-in: Today, 8:30 AM</span>
+                            <span class="font-label-sm text-label-sm">Registered: {{ child.created_at|slice:":10" }}</span>
                         </div>
                     </div>
                 </div>
-                <!-- Profile Card: Amara -->
-                <div
-                    class="bg-safe-white rounded-xl border border-warm-peach p-6 pillow-shadow space-y-6 relative overflow-hidden group">
-                    <div
-                        class="absolute top-0 right-0 w-24 h-24 bg-secondary-fixed opacity-10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110">
-                    </div>
-                    <div class="flex justify-between items-start">
-                        <div class="flex gap-4">
-                            <img class="w-16 h-16 rounded-xl object-cover shadow-sm"
-                                data-alt="Portrait of a young girl with braided hair and a peaceful expression, set against a soft blurred indoor playground. The lighting is diffused and gentle, evoking a sense of safety and tranquility. The color palette consists of soft pastels and warm tones to maintain visual cohesion with the UI design system."
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgnJeQlgmK9wHduw6WTdXw7CP05x2LdMgU4Rt9CBYmddRKRz3Gs8KqQqAlhl20Nw3ecZmnZEk8fyTxAGmfaCdS3Ruk-XDSZcYerb1sVE-pKNJg58MoUMLOQMzEtId5aOuSsZW0Orm6BauaNxeeNA_n3oa_EUiJiwFDpvfbXB1CRye8_GT4cNgD6nm-IInk6fjSfYuv_ZdZV2Zqt6V_QvTu6p4mGQKbAeKEnrm-fo9-SGLETr4z-ah7zUOaMDvLA98HYt_9_DE9RdSN" />
-                            <div>
-                                <h4 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Amara</h4>
-                                <p class="font-label-md text-label-md text-on-surface-variant">4 years • Female</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-1">
-                            <button
-                                class="p-2 rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant">
-                                <span class="material-symbols-outlined text-xl" data-icon="edit">edit</span>
-                            </button>
-                            <button
-                                class="p-2 rounded-full hover:bg-error-container hover:text-error transition-colors text-on-surface-variant">
-                                <span class="material-symbols-outlined text-xl" data-icon="archive">archive</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div class="space-y-1">
-                            <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tighter">
-                                Primary Concern</p>
-                            <p class="font-label-md text-label-md text-on-surface">Sensory Processing</p>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tighter">
-                                Language</p>
-                            <p class="font-label-md text-label-md text-on-surface">English</p>
-                        </div>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-end">
-                            <p class="font-label-sm text-label-sm text-on-surface-variant">Profile Completion</p>
-                            <p class="font-label-md text-label-md text-calm-teal">42%</p>
-                        </div>
-                        <div class="h-3 w-full bg-surface-container-high rounded-full overflow-hidden">
-                            <div class="h-full bg-calm-teal rounded-full" style="width: 42%"></div>
-                        </div>
-                    </div>
-                    <div class="pt-4 border-t border-surface-container-highest flex items-center justify-between">
-                        <div class="flex items-center gap-2 text-on-surface-variant">
-                            <span class="material-symbols-outlined text-base" data-icon="history">history</span>
-                            <span class="font-label-sm text-label-sm">Last check-in: 2 days ago</span>
-                        </div>
-                    </div>
+                {% empty %}
+                <div class="col-span-2 py-12 text-center bg-safe-white rounded-xl border border-dashed border-outline-variant p-6">
+                    <p class="font-label-md text-label-md text-on-surface-variant mb-4">No children profiles registered yet.</p>
+                    <button onclick="toggleModal(true)" class="bg-calm-teal text-white px-6 py-2.5 rounded-full font-label-md hover:bg-secondary transition-all shadow-md">
+                        Add Your First Child
+                    </button>
                 </div>
+                {% endfor %}
             </div>
         </section>
         <!-- Quick Actions Section -->
@@ -397,20 +364,80 @@
             <span class="font-label-sm text-label-sm">Profile</span>
         </a>
     </nav>
+    <!-- Add Child Modal -->
+    <div id="add-child-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <!-- Modal Content Card -->
+        <div class="bg-safe-white w-full max-w-lg rounded-2xl border border-warm-peach shadow-2xl p-6 relative flex flex-col max-h-[90vh] overflow-hidden">
+            <!-- Close Button -->
+            <button onclick="toggleModal(false)" class="absolute top-4 right-4 text-on-surface-variant hover:bg-surface-variant/50 p-2 rounded-full transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            
+            <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-4">Add a New Child</h3>
+            
+            <form method="POST" enctype="multipart/form-data" action="{% url 'child_profile' %}" class="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_child">
+                
+                <div class="space-y-1">
+                    <label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Child's Name</label>
+                    <input name="name" required class="w-full h-12 px-4 rounded-lg bg-surface-container-low border-transparent form-input-focus transition-all font-body-md" placeholder="Child's Name" type="text" />
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">DOB / Age</label>
+                    <input name="dob" required class="w-full h-12 px-4 rounded-lg bg-surface-container-low border-transparent form-input-focus transition-all font-body-md" placeholder="e.g. 5 yrs or 2021-04-12" type="text" />
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Primary Concern / Diagnosis</label>
+                    <select name="concern" required class="w-full h-12 px-4 rounded-lg bg-surface-container-low border-transparent form-input-focus transition-all font-body-md">
+                        <option value="">Select Option</option>
+                        <option value="Autism Spectrum Disorder">Autism Spectrum Disorder</option>
+                        <option value="ADHD">ADHD</option>
+                        <option value="Dyslexia">Dyslexia</option>
+                        <option value="Sensory Processing">Sensory Processing</option>
+                        <option value="Other / Seeking Diagnosis">Other / Seeking Diagnosis</option>
+                    </select>
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block">Language Preference</label>
+                    <div class="flex gap-4 pt-1">
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                            <input checked class="w-5 h-5 text-calm-teal border-warm-peach focus:ring-soft-amber" name="language" type="radio" value="English" />
+                            <span class="font-body-md group-hover:text-calm-teal transition-colors">English</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                            <input class="w-5 h-5 text-calm-teal border-warm-peach focus:ring-soft-amber" name="language" type="radio" value="Kiswahili" />
+                            <span class="font-body-md group-hover:text-calm-teal transition-colors">Kiswahili</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="space-y-1 pt-2">
+                    <label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">Profile Picture</label>
+                    <input name="profile_picture" type="file" accept="image/*" class="w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-label-md file:bg-secondary-container file:text-on-secondary-container hover:file:opacity-90 cursor-pointer" />
+                </div>
+                
+                <button class="w-full h-touch-target-min bg-calm-teal text-safe-white font-label-md text-label-md rounded-full shadow-lg hover:bg-secondary active:scale-95 transition-all mt-6" type="submit">
+                    Register Child
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Simple micro-interaction for child switcher
-        const childButtons = document.querySelectorAll('.custom-scroll button');
-        childButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                childButtons.forEach(b => {
-                    b.classList.remove('bg-primary', 'text-safe-white');
-                    b.classList.add('bg-safe-white', 'border', 'border-warm-peach', 'text-on-surface');
-                });
-                btn.classList.add('bg-primary', 'text-safe-white');
-                btn.classList.remove('bg-safe-white', 'border', 'border-warm-peach', 'text-on-surface');
-            });
-        });
+        function toggleModal(show) {
+            const modal = document.getElementById('add-child-modal');
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
     </script>
 </body>
-
 </html>

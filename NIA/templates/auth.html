@@ -184,6 +184,21 @@
             <h2 class="font-headline-lg text-headline-lg mb-2">Welcome Back</h2>
             <p class="text-on-surface-variant font-body-md">Your gentle partner in neurodiverse caregiving.</p>
         </div>
+        
+        <!-- Messages Alert Container -->
+        {% if messages %}
+        <div class="w-full mb-6 space-y-2">
+            {% for message in messages %}
+            <div class="p-4 rounded-xl font-label-md text-label-md {% if message.tags == 'success' %}bg-secondary-container text-on-secondary-container border border-secondary{% elif message.tags == 'warning' %}bg-soft-amber/30 text-on-surface border border-soft-amber{% else %}bg-error-container text-on-error-container border border-error{% endif %} flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">
+                    {% if message.tags == 'success' %}check_circle{% elif message.tags == 'warning' %}warning{% else %}error{% endif %}
+                </span>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <!-- Auth Card -->
         <div
             class="w-full max-w-7xl bg-safe-white rounded-xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.05)] border border-warm-peach overflow-hidden">
@@ -197,14 +212,16 @@
             </div>
             <div class="p-6">
                 <!-- Sign In Tab Content -->
-                <form class="space-y-4 fade-in" id="form-signin">
+                 <form class="space-y-4 fade-in" id="form-signin" method="POST" action="{% url 'auth' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="signin">
                     <div class="space-y-1">
                         <label
                             class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Email
                             Address</label>
                         <input
                             class="w-full h-12 px-4 rounded-lg bg-surface-container-low border-transparent form-input-focus transition-all font-body-md"
-                            placeholder="caregiver@example.com" required="" type="email" />
+                            placeholder="caregiver@example.com" required="" type="email" name="email" />
                     </div>
                     <div class="space-y-1">
                         <div class="flex justify-between">
@@ -215,11 +232,11 @@
                         </div>
                         <input
                             class="w-full h-12 px-4 rounded-lg bg-surface-container-low border-transparent form-input-focus transition-all font-body-md"
-                            placeholder="••••••••" required="" type="password" />
+                            placeholder="••••••••" required="" type="password" name="password" />
                     </div>
                     <div class="flex items-center gap-2 py-2">
                         <input class="w-5 h-5 rounded border-warm-peach text-calm-teal focus:ring-soft-amber"
-                            id="remember" type="checkbox" />
+                            id="remember" type="checkbox" name="remember" />
                         <label class="font-body-md text-on-surface-variant" for="remember">Remember me</label>
                     </div>
                     <button
@@ -229,7 +246,9 @@
                     </button>
                 </form>
                 <!-- Sign Up Tab Content (Hidden by default) -->
-                <form class="hidden space-y-4 fade-in" id="form-signup">
+                <form class="hidden space-y-4 fade-in" id="form-signup" method="POST" action="{% url 'auth' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="signup">
                     <div class="grid grid-cols-1 gap-4">
                         <div class="space-y-1">
                             <label
@@ -237,7 +256,7 @@
                                 Name</label>
                             <input
                                 class="w-full h-12 px-4 rounded-lg bg-surface-container-low border-transparent form-input-focus transition-all font-body-md"
-                                placeholder="Caregiver Name" required="" type="text" />
+                                placeholder="Caregiver Name" required="" type="text" name="full_name" />
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-1">
@@ -245,14 +264,14 @@
                                     class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Email</label>
                                 <input
                                     class="w-full h-12 px-4 rounded-lg bg-surface-container-low border-transparent form-input-focus transition-all font-body-md"
-                                    placeholder="Email" required="" type="email" />
+                                    placeholder="Email" required="" type="email" name="email" />
                             </div>
                             <div class="space-y-1">
                                 <label
                                     class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Phone</label>
                                 <input
                                     class="w-full h-12 px-4 rounded-lg bg-surface-container-low border-transparent form-input-focus transition-all font-body-md"
-                                    placeholder="+254..." type="tel" />
+                                    placeholder="+254..." type="tel" name="phone" />
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -261,14 +280,14 @@
                                     class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Password</label>
                                 <input
                                     class="w-full h-12 px-4 rounded-lg bg-surface-container-low border-transparent form-input-focus transition-all font-body-md"
-                                    placeholder="••••••••" required="" type="password" />
+                                    placeholder="••••••••" required="" type="password" name="password" />
                             </div>
                             <div class="space-y-1">
                                 <label
                                     class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Confirm</label>
                                 <input
                                     class="w-full h-12 px-4 rounded-lg bg-surface-container-low border-transparent form-input-focus transition-all font-body-md"
-                                    placeholder="••••••••" required="" type="password" />
+                                    placeholder="••••••••" required="" type="password" name="confirm_password" />
                             </div>
                         </div>
                         <!-- <div class="border-t border-surface-container pt-4 mt-2">
@@ -396,6 +415,10 @@
                 signUpTab.classList.add('tab-active');
             }
         }
+
+        // Initialize active tab from Django context
+        const initialTab = "{{ active_tab|default:'signin' }}";
+        switchTab(initialTab);
 
         // Micro-interaction for inputs
         document.querySelectorAll('input, select').forEach(el => {

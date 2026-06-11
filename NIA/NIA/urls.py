@@ -26,6 +26,8 @@ urlpatterns = [
     # Core
     path('', auth, name='auth'),
     path('child-profile/', child_profile, name='child_profile'),
+    path('select-child/<str:child_id>/', select_child, name='select_child'),
+    path('logout/', logout_view, name='logout'),
 
     # Engine
     path('knowledgebase/', knowledgebase, name='knowledgebase'),
