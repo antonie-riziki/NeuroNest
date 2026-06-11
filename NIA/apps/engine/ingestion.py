@@ -2,6 +2,7 @@ import os
 import sys
 import glob
 import warnings
+from functools import lru_cache
 
 
 sys.path.insert(1, "./apps")
@@ -19,6 +20,7 @@ load_dotenv(find_dotenv())
 GEMINI_API_KEY = os.environ.get("GOOGLE_API_KEY")
 
 
+@lru_cache(maxsize=1)
 def load_model():
     """
     Func loads the model and embeddings
@@ -46,7 +48,7 @@ def load_documents(source_dir: str):
     documents = []
 
     file_types = {
-        ".pdf": PyPDFLoader, 
+        ".pdf": PyPDFLoader,
         ".csv": CSVLoader,
         ".docx": Docx2txtLoader,
         ".doc": UnstructuredWordDocumentLoader,

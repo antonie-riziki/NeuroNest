@@ -427,13 +427,32 @@
             scrollToBottom();
         }
 
+        function createRequestId() {
+            if (window.crypto && window.crypto.randomUUID) {
+                return window.crypto.randomUUID();
+            }
+            return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        }
+
+        function setSendingState(isBusy) {
+            isSending = isBusy;
+            sendBtn.disabled = isBusy;
+            chatInput.disabled = isBusy;
+            sendBtn.classList.toggle('opacity-60', isBusy);
+            sendBtn.classList.toggle('cursor-not-allowed', isBusy);
+        }
+
         // Send message function
         async function triggerSendMessage() {
+            if (isSending) return;
+
             const query = chatInput.value.trim();
             if (!query) return;
+            const requestId = createRequestId();
 
             // Clear input
             chatInput.value = '';
+            setSendingState(true);
 
             // Append user message
             appendMessage('user', query);
@@ -452,7 +471,7 @@
                     body: JSON.stringify({ message: query, conversation_id: activeConversationId })
                 });
                 const data = await response.json();
-                
+
                 // Hide typing indicator
                 loadingState.classList.add('hidden');
 
@@ -468,6 +487,9 @@
                 loadingState.classList.add('hidden');
                 appendMessage('nia', "Connection error. Please try again later.");
                 console.error("Error communicating with RAG engine:", error);
+            } finally {
+                setSendingState(false);
+                chatInput.focus();
             }
         }
 
