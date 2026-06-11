@@ -3,7 +3,7 @@ import sys
 import glob
 import getpass
 import warnings
-from typing import List, Union
+from typing import Iterable, List, Union
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader, CSVLoader
 from langchain_core.prompts import PromptTemplate
@@ -24,9 +24,37 @@ from .prompt_builder import prompt_template_func
 warnings.filterwarnings("ignore")
 
 
+def _knowledge_source_dirs(settings):
+    """Return every directory that should seed the global RAG knowledge base."""
+    candidate_dirs = [
+        os.path.join(settings.BASE_DIR, 'media', 'docs', 'global'),
+        os.path.join(settings.BASE_DIR, 'static', 'docs'),
+    ]
+    return [path for path in candidate_dirs if os.path.isdir(path)]
 
 
-def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, caregiver_profile=None, child_id=None):
+def _load_documents_from_dirs(source_dirs: Iterable[str]):
+    docs = []
+    for source_dir in source_dirs:
+        docs.extend(load_documents(source_dir))
+    return docs
+
+
+def _vector_store_is_stale(db_path: str, source_dirs: Iterable[str]) -> bool:
+    index_file = os.path.join(db_path, 'index.faiss')
+    if not os.path.exists(index_file):
+        return True
+    index_mtime = os.path.getmtime(index_file)
+    for source_dir in source_dirs:
+        for root, _dirs, files in os.walk(source_dir):
+            for file_name in files:
+                if os.path.splitext(file_name)[1].lower() in {'.pdf', '.csv', '.docx', '.doc', '.dot'}:
+                    if os.path.getmtime(os.path.join(root, file_name)) > index_mtime:
+                        return True
+    return False
+
+
+def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, caregiver_profile=None, child_id=None, conversation_history=None, audience="caregiver"):
     """
     Create QA chain with proper error handling and personalization
     """
@@ -43,12 +71,13 @@ def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, careg
         os.makedirs(os.path.dirname(global_db_path), exist_ok=True)
 
         # 1. Initialize or load the global database
-        if os.path.exists(global_db_path):
+        global_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', 'global')
+        os.makedirs(global_docs_dir, exist_ok=True)
+        source_dirs = _knowledge_source_dirs(settings)
+        if os.path.exists(global_db_path) and not _vector_store_is_stale(global_db_path, source_dirs):
             vector_store = FAISS.load_local(global_db_path, embeddings, allow_dangerous_deserialization=True)
         else:
-            global_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', 'global')
-            os.makedirs(global_docs_dir, exist_ok=True)
-            docs = load_documents(global_docs_dir)
+            docs = _load_documents_from_dirs(source_dirs)
             if not docs:
                 docs = [Document(page_content="NIA Global Knowledge Base - Neurodevelopmental and neurodiversity support platform developed by Beyond Brain Barriers.", metadata={"source": "system"})]
             
@@ -89,7 +118,7 @@ def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, careg
         retriever = vector_store.as_retriever(search_kwargs={"k": 5})
 
         prompt = PromptTemplate(
-            template=prompt_template_func(child_profile, caregiver_profile),
+            template=prompt_template_func(child_profile, caregiver_profile, conversation_history, audience),
             input_variables=["context", "question"]
         )
 
@@ -118,8 +147,8 @@ def query_system(query: str, qa_chain):
     try:
         result = qa_chain({"query": query})
         if not result["result"] or "don't know" in result["result"].lower():
-            return "The answer could not be found in the provided documents"
-        return f"NIA: {result['result']}"
+            return "I don't have enough information to answer confidently yet. Could you tell me a little more about what is happening?"
+        return result['result']
     except Exception as e:
         return f"Error processing query: {e}"
 
@@ -164,7 +193,7 @@ def update_global_vector_store():
         global_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', 'global')
         os.makedirs(global_docs_dir, exist_ok=True)
 
-        docs = load_documents(global_docs_dir)
+        docs = _load_documents_from_dirs(_knowledge_source_dirs(settings))
         if not docs:
             docs = [Document(page_content="NIA Global Knowledge Base - Neurodevelopmental and neurodiversity support platform developed by Beyond Brain Barriers.", metadata={"source": "system"})]
             
