@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>NIA - Child Profile Management</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Work+Sans:wght@500;600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#3f4949",
+                        "inverse-surface": "#343028",
+                        "tertiary": "#000000",
+                        "on-surface-variant": "#45464c",
+                        "surface-dim": "#e1d9cd",
+                        "surface-bright": "#fff8f0",
+                        "soft-amber": "#FFE8A3",
+                        "primary": "#000000",
+                        "surface": "#fff8f0",
+                        "on-secondary-container": "#466a5b",
+                        "surface-container-low": "#fbf3e6",
+                        "calm-teal": "#6B9080",
+                        "tertiary-fixed-dim": "#bec8c8",
+                        "on-primary-fixed": "#141b2b",
+                        "secondary-fixed-dim": "#a8cfbd",
+                        "error-container": "#ffdad6",
+                        "safe-white": "#FFFFFF",
+                        "surface-variant": "#e9e2d5",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#141b2b",
+                        "on-secondary-fixed": "#002116",
+                        "background": "#fff8f0",
+                        "surface-container": "#f5ede0",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#c4ebd9",
+                        "secondary-container": "#c1e8d6",
+                        "tertiary-fixed": "#dae4e4",
+                        "tertiary-container": "#141d1e",
+                        "surface-container-high": "#efe7db",
+                        "on-surface": "#1e1b14",
+                        "outline-variant": "#c6c6cd",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#dce2f7",
+                        "on-tertiary-container": "#7c8686",
+                        "surface-tint": "#575e70",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed-variant": "#2a4d40",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#c0c6db",
+                        "outline": "#76777d",
+                        "primary-fixed-dim": "#c0c6db",
+                        "surface-container-highest": "#e9e2d5",
+                        "on-primary-fixed-variant": "#404758",
+                        "on-background": "#1e1b14",
+                        "inverse-on-surface": "#f8f0e3",
+                        "on-primary-container": "#7d8497",
+                        "secondary": "#426657",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#141d1e",
+                        "on-secondary": "#ffffff",
+                        "warm-peach": "#FFDCC5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "20px",
+                        "gutter": "24px",
+                        "touch-target-min": "48px",
+                        "base": "8px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Work Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-xl": ["Plus Jakarta Sans"],
+                        "label-md": ["Work Sans"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .custom-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .pillow-shadow {
+            box-shadow: 0 24px 48px -12px rgba(107, 144, 128, 0.15);
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-background font-body-md min-h-screen pb-24">
+    <!-- TopAppBar Component -->
+    <header
+        class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile h-touch-target-min bg-surface-container-low dark:bg-surface-container-low docked full-width rounded-b-xl shadow-sm dark:shadow-none transition-colors duration-200 ease-in-out">
+        <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-calm-teal dark:text-secondary-fixed"
+                data-icon="clinical_notes">clinical_notes</span>
+            <h1
+                class="font-headline-lg-mobile text-headline-lg-mobile text-calm-teal dark:text-secondary-fixed tracking-tight">
+                NIA</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="p-2 rounded-full hover:bg-surface-variant/50 transition-colors">
+                <span class="material-symbols-outlined text-on-surface-variant"
+                    data-icon="notifications">notifications</span>
+            </button>
+            <div class="w-8 h-8 rounded-full bg-secondary-fixed flex items-center justify-center">
+                <span class="text-on-secondary-fixed font-bold text-xs">SC</span>
+            </div>
+        </div>
+    </header>
+    <main class="mt-20 px-margin-mobile max-w-screen-xl mx-auto space-y-8">
+        <!-- Caregiver Summary Section -->
+        <section class="mt-6">
+            <div
+                class="bg-safe-white rounded-xl p-6 border border-warm-peach pillow-shadow flex items-center justify-between">
+                <div class="space-y-1">
+                    <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Hello, Sarah</h2>
+                    <p class="font-label-md text-label-md text-on-surface-variant">Caregiver ID: #NIA-4492 • <span
+                            class="text-calm-teal">Premium Member</span></p>
+                </div>
+                <div class="hidden md:flex flex-col items-end">
+                    <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Account
+                        Status</span>
+                    <span
+                        class="font-label-md text-label-md text-calm-teal bg-secondary-container px-3 py-1 rounded-full">Active
+                        Support</span>
+                </div>
+            </div>
+        </section>
+        <!-- Child Management Section -->
+        <section class="space-y-6">
+            <div class="flex items-center justify-between">
+                <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">My Children</h3>
+                <button
+                    class="flex items-center gap-2 bg-calm-teal text-on-primary font-label-md text-label-md px-4 py-2.5 rounded-full hover:opacity-90 transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-base" data-icon="add">add</span>
+                    Add New Child
+                </button>
+            </div>
+            <!-- Child Switcher / Horizontal List -->
+            <div class="flex gap-4 overflow-x-auto custom-scroll py-2 -mx-2 px-2">
+                <button
+                    class="flex-shrink-0 flex items-center gap-3 bg-primary text-safe-white px-5 py-3 rounded-full shadow-md">
+                    <div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden">
+                        <img class="w-full h-full object-cover"
+                            data-alt="Close-up portrait of a young boy with curly hair smiling softly against a neutral background. The lighting is warm and natural, reinforcing a calm and supportive atmosphere. The aesthetic is professional and high-key, matching the serene healthcare theme of the app."
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXSlhHaJiDhD7kKRZgNXp2iPJjJoy6ADQS0CU_1ifEx8JGiIWQDl5av4C4BumGXRVJHiDHTh1-bEAD6ZAsie5DrdjyskuBbl_S0iIP5AruDQ2ne76Og-Y3Sustjtif0K0WKCw1vlAoPdQDp0r1o1yc9CID9H7yvTeiioE6glw2oo7tCtmGIR2L54mNES7LfqZA3GopsGdbegsh7CckjpA-gC58TjMAprtO1wlO1130ym4q8y7L4ms1_LkC9ODPI9uWg8v7SfoF_wTn" />
+                    </div>
+                    <span class="font-label-md text-label-md">Leo</span>
+                </button>
+                <button
+                    class="flex-shrink-0 flex items-center gap-3 bg-safe-white border border-warm-peach text-on-surface px-5 py-3 rounded-full hover:bg-surface-container-high transition-colors">
+                    <div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden">
+                        <img class="w-full h-full object-cover"
+                            data-alt="Portrait of a young girl with braided hair and a peaceful expression, set against a soft blurred indoor playground. The lighting is diffused and gentle, evoking a sense of safety and tranquility. The color palette consists of soft pastels and warm tones to maintain visual cohesion with the UI design system."
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdKKMa1yiKjFVonVs1DjJc5MLG4b_jXOWvC_5-bO15vYDRcMRR_rp1x_Nt2lqRq79bDGTWyQPqAPktnIvFNGOY2wiZy4Wtc7eUbQJvm2tTZvIEeWrYbqbYvi7HWKDTarMb4dty9wB6nQLbb_junk0tzl5Q0Yo20pVLntsmzNCEkxqf5Lw-2hwLplL1pxTQU7kkN_n4NXV21B641XygNQ0xvinhiDQP0xlDSyGOq3M0wNo2RnLAj032t1rmJJ6dJO2VkfeOTOeGzGHi" />
+                    </div>
+                    <span class="font-label-md text-label-md">Amara</span>
+                </button>
+                <button
+                    class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full border-2 border-dashed border-outline-variant text-outline hover:border-calm-teal hover:text-calm-teal transition-all">
+                    <span class="material-symbols-outlined" data-icon="add">add</span>
+                </button>
+            </div>
+            <!-- Profile Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Profile Card: Leo -->
+                <div
+                    class="bg-safe-white rounded-xl border border-warm-peach p-6 pillow-shadow space-y-6 relative overflow-hidden group">
+                    <div
+                        class="absolute top-0 right-0 w-24 h-24 bg-soft-amber opacity-10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110">
+                    </div>
+                    <div class="flex justify-between items-start">
+                        <div class="flex gap-4">
+                            <img class="w-16 h-16 rounded-xl object-cover shadow-sm"
+                                data-alt="Close-up portrait of a young boy with curly hair smiling softly against a neutral background. The lighting is warm and natural, reinforcing a calm and supportive atmosphere. The aesthetic is professional and high-key, matching the serene healthcare theme of the app."
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQhkUVBDcoQWAGF_s-8bg_VfrC9sQat0YH0WMO6LlXLPCYzhOg2saHtuS9wjX83POfF6rl_o6tLRM6BheGC6w5c8YkoJlt4G09yAK4UuJa63tMC7KFvFqRYrRyyWhPhzn98cWuHaa6iPrfoebqWSbUwIFaZgOvKq5JKza4g7KkqN-HTIdy9E2cuabYBaZuNXX13Rwrhw2Lf8MATQuVGWEQpit8jQ-8kFF6Kab120xQjuF0eg34a5ohBAGrFWSTV35ZzsFPrNu200VE" />
+                            <div>
+                                <h4 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Leo</h4>
+                                <p class="font-label-md text-label-md text-on-surface-variant">6 years • Male</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-1">
+                            <button
+                                class="p-2 rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant">
+                                <span class="material-symbols-outlined text-xl" data-icon="edit">edit</span>
+                            </button>
+                            <button
+                                class="p-2 rounded-full hover:bg-error-container hover:text-error transition-colors text-on-surface-variant">
+                                <span class="material-symbols-outlined text-xl" data-icon="archive">archive</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="space-y-1">
+                            <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tighter">
+                                Primary Concern</p>
+                            <p class="font-label-md text-label-md text-on-surface">Autism Spectrum</p>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tighter">
+                                Language</p>
+                            <p class="font-label-md text-label-md text-on-surface">English / Spanish</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-end">
+                            <p class="font-label-sm text-label-sm text-on-surface-variant">Profile Completion</p>
+                            <p class="font-label-md text-label-md text-calm-teal">85%</p>
+                        </div>
+                        <div class="h-3 w-full bg-surface-container-high rounded-full overflow-hidden">
+                            <div class="h-full bg-calm-teal rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-surface-container-highest flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-base" data-icon="history">history</span>
+                            <span class="font-label-sm text-label-sm">Last check-in: Today, 8:30 AM</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Profile Card: Amara -->
+                <div
+                    class="bg-safe-white rounded-xl border border-warm-peach p-6 pillow-shadow space-y-6 relative overflow-hidden group">
+                    <div
+                        class="absolute top-0 right-0 w-24 h-24 bg-secondary-fixed opacity-10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110">
+                    </div>
+                    <div class="flex justify-between items-start">
+                        <div class="flex gap-4">
+                            <img class="w-16 h-16 rounded-xl object-cover shadow-sm"
+                                data-alt="Portrait of a young girl with braided hair and a peaceful expression, set against a soft blurred indoor playground. The lighting is diffused and gentle, evoking a sense of safety and tranquility. The color palette consists of soft pastels and warm tones to maintain visual cohesion with the UI design system."
+                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgnJeQlgmK9wHduw6WTdXw7CP05x2LdMgU4Rt9CBYmddRKRz3Gs8KqQqAlhl20Nw3ecZmnZEk8fyTxAGmfaCdS3Ruk-XDSZcYerb1sVE-pKNJg58MoUMLOQMzEtId5aOuSsZW0Orm6BauaNxeeNA_n3oa_EUiJiwFDpvfbXB1CRye8_GT4cNgD6nm-IInk6fjSfYuv_ZdZV2Zqt6V_QvTu6p4mGQKbAeKEnrm-fo9-SGLETr4z-ah7zUOaMDvLA98HYt_9_DE9RdSN" />
+                            <div>
+                                <h4 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Amara</h4>
+                                <p class="font-label-md text-label-md text-on-surface-variant">4 years • Female</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-1">
+                            <button
+                                class="p-2 rounded-full hover:bg-surface-variant transition-colors text-on-surface-variant">
+                                <span class="material-symbols-outlined text-xl" data-icon="edit">edit</span>
+                            </button>
+                            <button
+                                class="p-2 rounded-full hover:bg-error-container hover:text-error transition-colors text-on-surface-variant">
+                                <span class="material-symbols-outlined text-xl" data-icon="archive">archive</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="space-y-1">
+                            <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tighter">
+                                Primary Concern</p>
+                            <p class="font-label-md text-label-md text-on-surface">Sensory Processing</p>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-tighter">
+                                Language</p>
+                            <p class="font-label-md text-label-md text-on-surface">English</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-end">
+                            <p class="font-label-sm text-label-sm text-on-surface-variant">Profile Completion</p>
+                            <p class="font-label-md text-label-md text-calm-teal">42%</p>
+                        </div>
+                        <div class="h-3 w-full bg-surface-container-high rounded-full overflow-hidden">
+                            <div class="h-full bg-calm-teal rounded-full" style="width: 42%"></div>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-surface-container-highest flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-on-surface-variant">
+                            <span class="material-symbols-outlined text-base" data-icon="history">history</span>
+                            <span class="font-label-sm text-label-sm">Last check-in: 2 days ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Quick Actions Section -->
+        <section class="space-y-6">
+            <h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Quick Actions</h3>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <button
+                    class="flex flex-col items-center justify-center p-6 bg-safe-white rounded-xl border border-warm-peach hover:bg-secondary-container transition-all group pillow-shadow">
+                    <div
+                        class="w-12 h-12 rounded-full bg-secondary-fixed mb-4 flex items-center justify-center text-on-secondary-fixed group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+                    </div>
+                    <span class="font-label-md text-label-md text-on-surface text-center">Daily Check-in</span>
+                </button>
+                <button
+                    class="flex flex-col items-center justify-center p-6 bg-safe-white rounded-xl border border-warm-peach hover:bg-secondary-container transition-all group pillow-shadow">
+                    <div
+                        class="w-12 h-12 rounded-full bg-soft-amber mb-4 flex items-center justify-center text-on-surface group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined" data-icon="chat_bubble"
+                            style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+                    </div>
+                    <span class="font-label-md text-label-md text-on-surface text-center">Open NIA Chat</span>
+                </button>
+                <button
+                    class="flex flex-col items-center justify-center p-6 bg-safe-white rounded-xl border border-warm-peach hover:bg-secondary-container transition-all group pillow-shadow">
+                    <div
+                        class="w-12 h-12 rounded-full bg-tertiary-fixed mb-4 flex items-center justify-center text-on-tertiary-fixed group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+                    </div>
+                    <span class="font-label-md text-label-md text-on-surface text-center">View Progress</span>
+                </button>
+                <button
+                    class="flex flex-col items-center justify-center p-6 bg-safe-white rounded-xl border border-warm-peach hover:bg-secondary-container transition-all group pillow-shadow">
+                    <div
+                        class="w-12 h-12 rounded-full bg-surface-variant mb-4 flex items-center justify-center text-on-surface-variant group-hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined" data-icon="description">description</span>
+                    </div>
+                    <span class="font-label-md text-label-md text-on-surface text-center">Weekly Reports</span>
+                </button>
+            </div>
+        </section>
+        <!-- Footer Component -->
+        <footer
+            class="w-full flex flex-col items-center gap-2 pt-4 pb-20 px-margin-mobile bg-transparent opacity-80 mb-4">
+            <p class="font-label-sm text-label-sm text-on-surface-variant text-center">NIA is an AI assistant, not a
+                medical professional. Always consult a specialist for clinical advice.</p>
+            <div class="flex gap-4">
+                <a class="font-label-sm text-label-sm text-on-surface-variant underline hover:text-primary"
+                    href="#">Privacy Policy</a>
+                <a class="font-label-sm text-label-sm text-on-surface-variant underline hover:text-primary"
+                    href="#">Support</a>
+            </div>
+        </footer>
+    </main>
+    <!-- BottomNavBar Component -->
+    <nav
+        class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-3 bg-safe-white dark:bg-surface-container-lowest docked full-width rounded-t-xl shadow-[0_-4px_24px_rgba(0,0,0,0.05)] border-t border-warm-peach dark:border-outline-variant">
+        <a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-transform scale-95 active:scale-90 duration-150"
+            href="#">
+            <span class="material-symbols-outlined mb-1" data-icon="chat_bubble">chat_bubble</span>
+            <span class="font-label-sm text-label-sm">Chat</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-transform scale-95 active:scale-90 duration-150"
+            href="#">
+            <span class="material-symbols-outlined mb-1" data-icon="database">database</span>
+            <span class="font-label-sm text-label-sm">Knowledge</span>
+        </a>
+        <!-- Active State: Profile -->
+        <a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-4 py-1 transition-transform scale-95 active:scale-90 duration-150"
+            href="#">
+            <span class="material-symbols-outlined mb-1" data-icon="account_circle"
+                style="font-variation-settings: 'FILL' 1;">account_circle</span>
+            <span class="font-label-sm text-label-sm">Profile</span>
+        </a>
+    </nav>
+    <script>
+        // Simple micro-interaction for child switcher
+        const childButtons = document.querySelectorAll('.custom-scroll button');
+        childButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                childButtons.forEach(b => {
+                    b.classList.remove('bg-primary', 'text-safe-white');
+                    b.classList.add('bg-safe-white', 'border', 'border-warm-peach', 'text-on-surface');
+                });
+                btn.classList.add('bg-primary', 'text-safe-white');
+                btn.classList.remove('bg-safe-white', 'border', 'border-warm-peach', 'text-on-surface');
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -17,14 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from apps.core.views import auth
-from apps.engine.views import knowledgebase, chat
+from apps.core.views import *
+from apps.engine.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Core
     path('', auth, name='auth'),
+    path('child-profile/', child_profile, name='child_profile'),
 
     # Engine
     path('knowledgebase/', knowledgebase, name='knowledgebase'),
