@@ -1,7 +1,6 @@
 import os
 import sys
 import glob
-import getpass
 import warnings
 
 
@@ -19,17 +18,14 @@ load_dotenv(find_dotenv())
 
 GEMINI_API_KEY = os.environ.get("GOOGLE_API_KEY")
 
-if not GEMINI_API_KEY:
-    GEMINI_API_KEY = getpass.getpass("Enter you Google Gemini API key: ")
-
-
-
-
 
 def load_model():
     """
     Func loads the model and embeddings
     """
+    if not GEMINI_API_KEY:
+        raise ValueError("GOOGLE_API_KEY is required to initialize the Gemini RAG model.")
+
     model = ChatGoogleGenerativeAI(
         model="gemini-3.1-flash-lite",
         google_api_key=GEMINI_API_KEY,
