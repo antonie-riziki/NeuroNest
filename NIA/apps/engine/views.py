@@ -38,10 +38,6 @@ def _new_chat_thread(child_name):
         'messages': [],
     }
 
-
-def _handled_chat_requests(request):
-    return request.session.setdefault('handled_chat_requests', {})
-
 def knowledgebase(request):
     token = request.session.get('access_token')
     caregiver_id = request.session.get('caregiver_id')
@@ -224,17 +220,11 @@ def chat(request):
             body = json.loads(request.body)
             query = body.get('message', '').strip()
             conversation_id = body.get('conversation_id')
-            request_id = body.get('request_id')
         except Exception:
             return JsonResponse({'error': 'Invalid request payload'}, status=400)
 
         if not query:
             return JsonResponse({'error': 'Query cannot be empty'}, status=400)
-
-        handled_requests = _handled_chat_requests(request)
-        duplicate_key = f"{active_child.get('id')}:{conversation_id}:{request_id}" if request_id else None
-        if duplicate_key and duplicate_key in handled_requests:
-            return JsonResponse(handled_requests[duplicate_key])
 
         for thread in child_threads:
             if thread.get('id') == conversation_id:
@@ -270,20 +260,11 @@ def chat(request):
         child_threads.insert(0, active_thread)
         request.session.modified = True
 
-        response_payload = {
+        return JsonResponse({
             'response': response,
             'conversation_id': active_thread.get('id'),
             'title': active_thread.get('title'),
-        }
-        if duplicate_key:
-            handled_requests[duplicate_key] = response_payload
-            # Keep the session payload small while still de-duping recent retries.
-            if len(handled_requests) > 25:
-                oldest_key = next(iter(handled_requests))
-                handled_requests.pop(oldest_key, None)
-            request.session.modified = True
-
-        return JsonResponse(response_payload)
+        })
 
     context = {
         'active_child': active_child,

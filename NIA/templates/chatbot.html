@@ -367,7 +367,6 @@
         const sendBtn = document.getElementById('send-btn');
         const loadingState = document.getElementById('loading-state');
         let activeConversationId = '{{ active_thread.id }}';
-        let isSending = false;
 
         // Auto-scroll to bottom of page/container
         function scrollToBottom() {
@@ -469,11 +468,7 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
-                    body: JSON.stringify({
-                        message: query,
-                        conversation_id: activeConversationId,
-                        request_id: requestId
-                    })
+                    body: JSON.stringify({ message: query, conversation_id: activeConversationId })
                 });
                 const data = await response.json();
 
