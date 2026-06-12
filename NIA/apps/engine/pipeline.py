@@ -50,35 +50,44 @@ def _vector_store_is_stale(db_path: str, source_dirs: Iterable[str]) -> bool:
     return False
 
 
+_VECTOR_STORE_CACHE = {}
+_CHUNK_SIZE = 2000
+_CHUNK_OVERLAP = 200
+_RETRIEVAL_K = 4
+
+def _write_index_version(db_path):
+    pass # Placeholder if needed
+
 def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, caregiver_profile=None, child_id=None, conversation_history=None, audience="caregiver"):
     """
-    Create QA chain with proper error handling and personalization
+    Create QA chain with high-performance in-memory caching.
     """
-
     try:
         from django.conf import settings
         llm, embeddings = load_model()
         if not llm or not embeddings:
-            model_type = "gemini"
-            raise ValueError(f"Model {model_type} not configured properly")
+            raise ValueError("Model or embeddings not configured properly")
 
         global_db_path = os.path.join(settings.BASE_DIR, 'vector_store_db', 'global')
-
-        # 1. Initialize or load the global database
-        global_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', 'global')
-        os.makedirs(global_docs_dir, exist_ok=True)
         source_dirs = _knowledge_source_dirs(settings)
-        if os.path.exists(global_db_path) and not _vector_store_is_stale(global_db_path, source_dirs):
-            vector_store = FAISS.load_local(global_db_path, embeddings, allow_dangerous_deserialization=True)
-        else:
-            docs = _load_documents_from_dirs(source_dirs)
-            if not docs:
-                docs = [Document(page_content="NIA Global Knowledge Base - Neurodevelopmental and neurodiversity support platform developed by Beyond Brain Barriers.", metadata={"source": "system"})]
-            
-            text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
-            splits = text_splitter.split_documents(docs)
-            vector_store = FAISS.from_documents(splits, embeddings)
-            vector_store.save_local(global_db_path)
+
+        # 1. Initialize or load the global database into cache
+        if "global" not in _VECTOR_STORE_CACHE:
+            os.makedirs(os.path.join(settings.BASE_DIR, 'media', 'docs', 'global'), exist_ok=True)
+            if os.path.exists(global_db_path) and not _vector_store_is_stale(global_db_path, source_dirs):
+                _VECTOR_STORE_CACHE["global"] = FAISS.load_local(global_db_path, embeddings, allow_dangerous_deserialization=True)
+            else:
+                docs = _load_documents_from_dirs(source_dirs)
+                if not docs:
+                    docs = [Document(page_content="NIA Global Knowledge Base - Neurodevelopmental and neurodiversity support platform.", metadata={"source": "system"})]
+                
+                text_splitter = RecursiveCharacterTextSplitter(chunk_size=_CHUNK_SIZE, chunk_overlap=_CHUNK_OVERLAP)
+                splits = text_splitter.split_documents(docs)
+                vector_store = FAISS.from_documents(splits, embeddings)
+                vector_store.save_local(global_db_path)
+                _VECTOR_STORE_CACHE["global"] = vector_store
+                
+        vector_store = _VECTOR_STORE_CACHE["global"]
 
         # 2. Load and merge child-specific database if in personalized mode
         if child_id:
@@ -86,33 +95,35 @@ def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, careg
             child_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', f'child_{child_id}')
             os.makedirs(child_docs_dir, exist_ok=True)
 
-            child_vector_store = None
-            child_source_dirs = [child_docs_dir]
-            child_signature = _source_signature(child_source_dirs)
-            child_cache_key = (child_db_path, child_signature)
-            if child_signature:
-                child_vector_store = _VECTOR_STORE_CACHE.get(child_cache_key)
-                if child_vector_store is None:
-                    if os.path.exists(child_db_path) and not _vector_store_is_stale(child_db_path, child_source_dirs):
-                        child_vector_store = FAISS.load_local(child_db_path, embeddings, allow_dangerous_deserialization=True)
+            child_cache_key = f"child_{child_id}"
+            
+            if child_cache_key not in _VECTOR_STORE_CACHE:
+                if os.path.exists(child_db_path) and not _vector_store_is_stale(child_db_path, [child_docs_dir]):
+                    _VECTOR_STORE_CACHE[child_cache_key] = FAISS.load_local(child_db_path, embeddings, allow_dangerous_deserialization=True)
+                else:
+                    docs = load_documents(child_docs_dir)
+                    if docs:
+                        text_splitter = RecursiveCharacterTextSplitter(chunk_size=_CHUNK_SIZE, chunk_overlap=_CHUNK_OVERLAP)
+                        splits = text_splitter.split_documents(docs)
+                        child_vs = FAISS.from_documents(splits, embeddings)
+                        child_vs.save_local(child_db_path)
+                        _VECTOR_STORE_CACHE[child_cache_key] = child_vs
                     else:
-                        docs = load_documents(child_docs_dir)
-                        if docs:
-                            child_vector_store = _build_vector_store(child_db_path, docs, embeddings)
-                    if child_vector_store is not None:
-                        _VECTOR_STORE_CACHE[child_cache_key] = child_vector_store
+                        _VECTOR_STORE_CACHE[child_cache_key] = None
+
+            child_vector_store = _VECTOR_STORE_CACHE[child_cache_key]
 
             if child_vector_store:
-                merged_cache_key = (global_db_path, _global_signature, child_db_path, child_signature)
-                merged_vector_store = _VECTOR_STORE_CACHE.get(merged_cache_key)
-                if merged_vector_store is None:
-                    merged_vector_store = FAISS.load_local(global_db_path, embeddings, allow_dangerous_deserialization=True)
-                    merged_vector_store.merge_from(child_vector_store)
-                    _VECTOR_STORE_CACHE[merged_cache_key] = merged_vector_store
-                vector_store = merged_vector_store
+                merged_cache_key = f"merged_{child_id}"
+                if merged_cache_key not in _VECTOR_STORE_CACHE:
+                    # Load a fresh copy of global from disk to merge into safely without mutating the shared global cache
+                    merged_vs = FAISS.load_local(global_db_path, embeddings, allow_dangerous_deserialization=True)
+                    merged_vs.merge_from(child_vector_store)
+                    _VECTOR_STORE_CACHE[merged_cache_key] = merged_vs
+                
+                vector_store = _VECTOR_STORE_CACHE[merged_cache_key]
 
-        # 3. Add dynamic source directory docs if passed directly.
-        # This path is intentionally uncached because uploads already rebuild stores explicitly.
+        # 3. Add dynamic source directory docs if passed directly
         if source_dir:
             docs = load_documents(source_dir)
             if docs:
@@ -120,9 +131,7 @@ def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, careg
                 splits = text_splitter.split_documents(docs)
                 vector_store.add_documents(splits)
 
-        retriever = TruncatedRetriever(
-            retriever=vector_store.as_retriever(search_kwargs={"k": _RETRIEVAL_K})
-        )
+        retriever = vector_store.as_retriever(search_kwargs={"k": _RETRIEVAL_K})
 
         prompt = PromptTemplate(
             template=prompt_template_func(child_profile, caregiver_profile, conversation_history, audience),
@@ -180,8 +189,10 @@ def update_vector_store_for_child(child_id):
             splits = text_splitter.split_documents(docs)
             vector_store = FAISS.from_documents(splits, embeddings)
             vector_store.save_local(child_db_path)
-            _write_index_version(child_db_path)
-            _VECTOR_STORE_CACHE.clear()
+            
+            # Clear cache for this child so it gets reloaded
+            _VECTOR_STORE_CACHE.pop(f"child_{child_id}", None)
+            _VECTOR_STORE_CACHE.pop(f"merged_{child_id}", None)
             return True
     except Exception as e:
         print(f"Error updating child vector store: {e}")
@@ -210,7 +221,8 @@ def update_global_vector_store():
         splits = text_splitter.split_documents(docs)
         vector_store = FAISS.from_documents(splits, embeddings)
         vector_store.save_local(global_db_path)
-        _write_index_version(global_db_path)
+        
+        # Clear global cache
         _VECTOR_STORE_CACHE.clear()
         return True
     except Exception as e:
