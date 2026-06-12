@@ -20,22 +20,11 @@ def _child_thread_bucket(request, child_id):
     return store[key]
 
 
-def _chat_audience(request):
-    """Return who NIA should speak to in this session."""
-    role = (
-        request.session.get('account_type')
-        or request.session.get('user_role')
-        or request.session.get('role')
-        or 'caregiver'
-    )
-    return 'child' if str(role).lower() == 'child' else 'caregiver'
-
-
-def _summarize_history(messages, limit=10, user_label='Caregiver'):
+def _summarize_history(messages, limit=10):
     recent = messages[-limit:]
     lines = []
     for message in recent:
-        role = user_label if message.get('sender') == 'user' else 'NIA'
+        role = 'Child' if message.get('sender') == 'user' else 'NIA'
         text = message.get('text', '').strip()
         if text:
             lines.append(f"{role}: {text}")
@@ -48,10 +37,6 @@ def _new_chat_thread(child_name):
         'title': f"Chat with {child_name}",
         'messages': [],
     }
-
-
-def _handled_chat_requests(request):
-    return request.session.setdefault('handled_chat_requests', {})
 
 def knowledgebase(request):
     token = request.session.get('access_token')
@@ -230,25 +215,16 @@ def chat(request):
         else:
             active_thread = child_threads[0]
 
-    audience = _chat_audience(request)
-    user_label = 'Child' if audience == 'child' else 'Caregiver'
-
     if request.method == 'POST':
         try:
             body = json.loads(request.body)
             query = body.get('message', '').strip()
             conversation_id = body.get('conversation_id')
-            request_id = body.get('request_id')
         except Exception:
             return JsonResponse({'error': 'Invalid request payload'}, status=400)
 
         if not query:
             return JsonResponse({'error': 'Query cannot be empty'}, status=400)
-
-        handled_requests = _handled_chat_requests(request)
-        duplicate_key = f"{active_child.get('id')}:{conversation_id}:{request_id}" if request_id else None
-        if duplicate_key and duplicate_key in handled_requests:
-            return JsonResponse(handled_requests[duplicate_key])
 
         for thread in child_threads:
             if thread.get('id') == conversation_id:
@@ -263,7 +239,7 @@ def chat(request):
         # Personalize system instructions
         child_profile_str = f"Name: {active_child.get('name')}, DOB/Age: {active_child.get('dob')}, Concern/Diagnosis: {active_child.get('concern')}, Language: {active_child.get('language')}"
         caregiver_profile_str = f"Caregiver ID: {caregiver_id}"
-        conversation_history = _summarize_history(previous_messages, user_label=user_label)
+        conversation_history = _summarize_history(previous_messages)
 
         # Load QA RAG chain
         qa_chain = get_qa_chain(
@@ -272,7 +248,7 @@ def chat(request):
             caregiver_profile=caregiver_profile_str,
             child_id=str(active_child.get('id')),
             conversation_history=conversation_history,
-            audience=audience
+            audience='child'
         )
         response = query_system(query, qa_chain)
 
@@ -284,27 +260,17 @@ def chat(request):
         child_threads.insert(0, active_thread)
         request.session.modified = True
 
-        response_payload = {
+        return JsonResponse({
             'response': response,
             'conversation_id': active_thread.get('id'),
             'title': active_thread.get('title'),
-        }
-        if duplicate_key:
-            handled_requests[duplicate_key] = response_payload
-            # Keep the session payload small while still de-duping recent retries.
-            if len(handled_requests) > 25:
-                oldest_key = next(iter(handled_requests))
-                handled_requests.pop(oldest_key, None)
-            request.session.modified = True
-
-        return JsonResponse(response_payload)
+        })
 
     context = {
         'active_child': active_child,
         'children': children,
         'chat_threads': child_threads,
         'active_thread': active_thread,
-        'chat_audience': audience,
     }
     return render(request, 'chatbot.html', context)
 

@@ -248,11 +248,7 @@
                 </div>
                 <div
                     class="bg-secondary-container/30 border border-secondary-fixed text-on-surface p-4 rounded-2xl rounded-bl-none shadow-sm">
-                    {% if chat_audience == 'child' %}
                     <p class="font-body-md text-body-md">Hi {{ active_child.name }}! I'm NIA. I'm here to chat with you, help you understand big feelings, and find small steps that feel doable. What would you like to talk about today?</p>
-                    {% else %}
-                    <p class="font-body-md text-body-md">Hello! I'm NIA, your NeuroNest support assistant. I have {{ active_child.name }}'s profile ready, so we can talk through what is happening and choose a practical next step together. How can I help today?</p>
-                    {% endif %}
                 </div>
             </div>
             {% for message in active_thread.messages %}
@@ -371,7 +367,6 @@
         const sendBtn = document.getElementById('send-btn');
         const loadingState = document.getElementById('loading-state');
         let activeConversationId = '{{ active_thread.id }}';
-        let isSending = false;
 
         // Auto-scroll to bottom of page/container
         function scrollToBottom() {
@@ -473,11 +468,7 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
-                    body: JSON.stringify({
-                        message: query,
-                        conversation_id: activeConversationId,
-                        request_id: requestId
-                    })
+                    body: JSON.stringify({ message: query, conversation_id: activeConversationId })
                 });
                 const data = await response.json();
 
