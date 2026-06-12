@@ -178,126 +178,99 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
             <!-- Left Column: Knowledge Ingestion Form -->
             <div class="lg:col-span-5 space-y-6">
-                <!-- Ingestion Card -->
-                <div class="bg-safe-white p-6 rounded-xl border border-warm-peach shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-                    <h2 class="font-headline-lg-mobile text-headline-lg-mobile mb-6">Ingest New Source</h2>
-                    <form method="POST" enctype="multipart/form-data" action="{% url 'knowledgebase' %}" class="space-y-5">
-                        {% csrf_token %}
-                        <!-- Upload Area -->
-                        <div
-                            class="group relative border-2 border-dashed border-outline-variant rounded-xl p-8 transition-colors hover:border-calm-teal bg-surface-container-low/30 flex flex-col items-center justify-center cursor-pointer">
-                            <input name="file" required accept=".pdf,.docx,.txt" class="absolute inset-0 opacity-0 cursor-pointer"
-                                type="file" />
-                            <div
-                                class="w-12 h-12 bg-secondary-container rounded-full flex items-center justify-center mb-3">
-                                <span class="material-symbols-outlined text-calm-teal">upload_file</span>
-                            </div>
-                            <p class="font-label-md text-label-md text-primary">Upload Document</p>
-                            <p class="text-xs text-on-surface-variant mt-1">PDF, DOCX, or TXT (Max 25MB)</p>
-                        </div>
-                        <!-- Title Input -->
-                        <div>
-                            <label class="block font-label-sm text-label-sm text-on-surface-variant mb-1.5 ml-1">Source
-                                Title</label>
-                            <input
-                                name="title"
-                                required
-                                class="w-full h-12 px-4 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md"
-                                placeholder="e.g., Sensory Integration Guide" type="text" />
-                        </div>
-                        <!-- Associated Child Dropdown -->
-                        <div>
-                            <label class="block font-label-sm text-label-sm text-on-surface-variant mb-1.5 ml-1">Associated Child Profile</label>
-                            <select name="associated_child" class="w-full h-12 px-4 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md bg-white">
-                                <option value="global">Global / Core Database</option>
-                                {% for child in children %}
-                                <option value="{{ child.id }}">{{ child.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <!-- Dropdowns Grid -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label
-                                    class="block font-label-sm text-label-sm text-on-surface-variant mb-1.5 ml-1">Category</label>
-                                <select
-                                    name="category"
-                                    class="w-full h-12 px-4 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md bg-white">
-                                    <option value="Sensory">Sensory</option>
-                                    <option value="Communication">Communication</option>
-                                    <option value="Emotional Regulation">Emotional Regulation</option>
-                                    <option value="Sleep">Sleep</option>
-                                    <option value="Daily Living">Daily Living</option>
-                                    <option value="Motor Skills">Motor Skills</option>
-                                    <option value="Social Skills">Social Skills</option>
-                                    <option value="Caregiver Wellbeing">Caregiver Wellbeing</option>
-                                    <option value="Kenyan Clinical Context">Kenyan Clinical Context</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label
-                                    class="block font-label-sm text-label-sm text-on-surface-variant mb-1.5 ml-1">Source
-                                    Tier</label>
-                                <select
-                                    name="tier"
-                                    class="w-full h-12 px-4 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md bg-white">
-                                    <option value="Tier 1 (Core Evidence)">Tier 1 (Core Evidence)</option>
-                                    <option value="Tier 2 (Clinical Guide)">Tier 2 (Clinical Guide)</option>
-                                    <option value="Tier 3 (Local Context)">Tier 3 (Local Context)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <!-- Review Status -->
-                        <div>
-                            <label class="block font-label-sm text-label-sm text-on-surface-variant mb-3 ml-1">Clinical
-                                Review Status</label>
-                            <div class="flex flex-wrap gap-3">
-                                <label
-                                    class="flex items-center px-4 py-2 rounded-full border border-outline-variant cursor-pointer hover:bg-surface-variant transition-colors has-[:checked]:bg-secondary-container has-[:checked]:border-secondary-container">
-                                    <input checked="" class="hidden" name="status" type="radio" value="Pending" />
-                                    <span class="font-label-sm text-label-sm">Pending</span>
-                                </label>
-                                <label
-                                    class="flex items-center px-4 py-2 rounded-full border border-outline-variant cursor-pointer hover:bg-surface-variant transition-colors has-[:checked]:bg-secondary-container has-[:checked]:border-secondary-container">
-                                    <input class="hidden" name="status" type="radio" value="Approved" />
-                                    <span class="font-label-sm text-label-sm">Approved</span>
-                                </label>
-                                <label
-                                    class="flex items-center px-4 py-2 rounded-full border border-outline-variant cursor-pointer hover:bg-surface-variant transition-colors has-[:checked]:bg-secondary-container has-[:checked]:border-secondary-container">
-                                    <input class="hidden" name="status" type="radio" value="Rejected" />
-                                    <span class="font-label-sm text-label-sm">Rejected</span>
-                                </label>
-                            </div>
-                        </div>
-                        <!-- Action Button -->
-                        <button
-                            type="submit"
-                            class="w-full h-14 bg-calm-teal text-safe-white rounded-xl font-headline-lg-mobile text-headline-lg-mobile hover:opacity-90 transition-opacity active:scale-[0.98] mt-4 flex items-center justify-center gap-2">
-                            <span class="material-symbols-outlined">database</span>
-                            Upload/Ingest
-                        </button>
-                    </form>
-                </div>
 
                 <!-- Query Search Card -->
                 <div class="bg-safe-white p-6 rounded-xl border border-warm-peach shadow-[0_4px_24px_rgba(0,0,0,0.02)] space-y-4">
                     <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary flex items-center gap-2">
-                        <span class="material-symbols-outlined text-calm-teal">smart_toy</span>
-                        Query General Database
+                        <span class="material-symbols-outlined text-calm-teal">psychology</span>
+                        Daily Behavior Log & Recommendations
                     </h2>
                     <p class="font-body-md text-body-md text-on-surface-variant text-xs">
-                        Query clinical documents, guides, and reports across all child profiles.
+                        Log a daily event to receive AI recommendations on exercises and materials based on the knowledge base.
                     </p>
                     <div class="space-y-3">
-                        <textarea id="search-input" rows="2" class="w-full p-3 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md text-sm placeholder:text-outline/60" placeholder="e.g., What is Leo's primary concern?"></textarea>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <select id="log-event" class="w-full p-3 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md text-sm bg-white text-on-surface-variant">
+                                <option value="">Select Event...</option>
+                                <option value="Transitioning between activities">Transitioning between activities</option>
+                                <option value="Mealtime">Mealtime</option>
+                                <option value="Bedtime / Waking up">Bedtime / Waking up</option>
+                                <option value="Homework / Learning">Homework / Learning</option>
+                                <option value="Social interaction / Playtime">Social interaction / Playtime</option>
+                                <option value="Outing / Public space">Outing / Public space</option>
+                                <option value="Unexpected change in routine">Unexpected change in routine</option>
+                                <option value="Sensory exposure">Sensory exposure</option>
+                                <option value="Self-care / Hygiene">Self-care / Hygiene</option>
+                            </select>
+                            
+                            <select id="log-trigger" class="w-full p-3 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md text-sm bg-white text-on-surface-variant">
+                                <option value="">Select Trigger...</option>
+                                <option value="Loud noises / Sensory overload">Loud noises / Sensory overload</option>
+                                <option value="Being told 'No' / Denied request">Being told "No" / Denied request</option>
+                                <option value="Stopping preferred activity">Stopping preferred activity</option>
+                                <option value="Task demand / Difficult task">Task demand / Difficult task</option>
+                                <option value="Hunger / Thirst">Hunger / Thirst</option>
+                                <option value="Fatigue / Lack of sleep">Fatigue / Lack of sleep</option>
+                                <option value="Physical discomfort / Illness">Physical discomfort / Illness</option>
+                                <option value="Change in routine">Change in routine</option>
+                                <option value="Unclear expectations">Unclear expectations</option>
+                            </select>
+                            
+                            <select id="log-environment" class="w-full p-3 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md text-sm bg-white text-on-surface-variant">
+                                <option value="">Select Environment...</option>
+                                <option value="Home - Living Room">Home - Living Room</option>
+                                <option value="Home - Bedroom">Home - Bedroom</option>
+                                <option value="Home - Kitchen/Dining">Home - Kitchen/Dining</option>
+                                <option value="School / Classroom">School / Classroom</option>
+                                <option value="Public space (Store, Park, Clinic)">Public space (Store, Park, Clinic)</option>
+                                <option value="Vehicle / Transit">Vehicle / Transit</option>
+                                <option value="Social gathering / Party">Social gathering / Party</option>
+                                <option value="Unfamiliar environment">Unfamiliar environment</option>
+                            </select>
+
+                            <select id="log-response" class="w-full p-3 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md text-sm bg-white text-on-surface-variant">
+                                <option value="">Select Child's Response...</option>
+                                <option value="Crying / Screaming">Crying / Screaming</option>
+                                <option value="Hiding / Withdrawal">Hiding / Withdrawal</option>
+                                <option value="Verbal refusal / Arguing">Verbal refusal / Arguing</option>
+                                <option value="Physical aggression">Physical aggression</option>
+                                <option value="Self-injury">Self-injury</option>
+                                <option value="Throwing objects / Property destruction">Throwing objects / Property destruction</option>
+                                <option value="Elopement / Running away">Elopement / Running away</option>
+                                <option value="Rocking / Stimming / Repetitive movements">Rocking / Stimming / Repetitive movements</option>
+                                <option value="Shutting down / Unresponsive">Shutting down / Unresponsive</option>
+                            </select>
+
+                            <select id="log-outcome" class="w-full p-3 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md text-sm bg-white text-on-surface-variant">
+                                <option value="">Select Outcome...</option>
+                                <option value="Removed from situation">Removed from situation</option>
+                                <option value="Given what was requested">Given what was requested</option>
+                                <option value="Ignored / Redirection attempted">Ignored / Redirection attempted</option>
+                                <option value="Calmed down independently">Calmed down independently</option>
+                                <option value="Required physical comfort / deep pressure">Required physical comfort / deep pressure</option>
+                                <option value="Task was modified or removed">Task was modified or removed</option>
+                                <option value="Escalated further">Escalated further</option>
+                                <option value="Verbal reprimand / Consequence applied">Verbal reprimand / Consequence applied</option>
+                            </select>
+
+                            <select id="log-stress" class="w-full p-3 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md text-sm bg-white text-on-surface-variant">
+                                <option value="">Select Stress Level...</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Extreme">Extreme</option>
+                            </select>
+                        </div>
+                        <textarea id="log-notes" rows="2" class="w-full p-3 rounded-lg border border-outline-variant focus:border-soft-amber focus:ring-0 transition-all font-body-md text-sm placeholder:text-outline/60" placeholder="Additional Notes..."></textarea>
+                        
                         <button id="search-btn" class="w-full h-11 bg-calm-teal text-white rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 shadow-sm">
-                            <span class="material-symbols-outlined text-sm">search</span> Search
+                            <span class="material-symbols-outlined text-sm">auto_awesome</span> Get Recommendations
                         </button>
                     </div>
                     
                     <!-- Response area -->
-                    <div id="search-result-container" class="hidden border border-warm-peach rounded-lg p-3 bg-surface-container-low/40 text-sm space-y-2 animate-fade-in max-h-[220px] overflow-y-auto custom-scrollbar">
-                        <p class="font-bold text-calm-teal">NIA Response:</p>
+                    <div id="search-result-container" class="hidden border border-warm-peach rounded-lg p-3 bg-surface-container-low/40 text-sm space-y-2 animate-fade-in max-h-[300px] overflow-y-auto custom-scrollbar">
+                        <p class="font-bold text-calm-teal">NIA Recommendations:</p>
                         <p id="search-result-text" class="text-on-surface leading-relaxed whitespace-pre-line"></p>
                     </div>
                 </div>
@@ -452,9 +425,9 @@
     </nav>
     <script>
         // Micro-interaction for form labels and feedback
-        const inputs = document.querySelectorAll('input, select');
+        const inputs = document.querySelectorAll('input, select, textarea');
         inputs.forEach(input => {
-            if (input.parentElement) {
+            if (input.parentElement && !input.classList.contains('absolute')) {
                 input.addEventListener('focus', () => {
                     input.parentElement.classList.add('scale-[1.01]');
                     input.style.transition = 'all 0.3s ease';
@@ -466,18 +439,36 @@
         });
 
         // Search execution AJAX
-        const searchInput = document.getElementById('search-input');
         const searchBtn = document.getElementById('search-btn');
         const searchResultContainer = document.getElementById('search-result-container');
         const searchResultText = document.getElementById('search-result-text');
 
         if (searchBtn) {
             searchBtn.addEventListener('click', async () => {
-                const query = searchInput.value.trim();
-                if (!query) return;
+                const event = document.getElementById('log-event').value.trim();
+                const trigger = document.getElementById('log-trigger').value.trim();
+                const env = document.getElementById('log-environment').value.trim();
+                const responseVal = document.getElementById('log-response').value.trim();
+                const outcome = document.getElementById('log-outcome').value.trim();
+                const stress = document.getElementById('log-stress').value;
+                const notes = document.getElementById('log-notes').value.trim();
+
+                if (!event && !trigger && !notes) {
+                    alert("Please fill in at least some details (Event, Trigger, or Notes) to get recommendations.");
+                    return;
+                }
+
+                const query = `Based on the following daily log, what exercises, materials, and strategies do you recommend from the clinical database?
+Event: ${event}
+Trigger: ${trigger}
+Environment: ${env}
+Response: ${responseVal}
+Outcome: ${outcome}
+Stress Level: ${stress}
+Notes: ${notes}`;
 
                 searchBtn.disabled = true;
-                searchBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">refresh</span> Searching...';
+                searchBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-sm">refresh</span> Analyzing...';
                 searchResultContainer.classList.add('hidden');
 
                 try {
