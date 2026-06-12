@@ -1,38 +1,3 @@
-def prompt_template_func(child_profile=None, caregiver_profile=None, speak_to_child=False):
-    # Determine dynamic audience directive
-    if speak_to_child:
-        audience_directive = """
-        ## AUDIENCE DIRECTIVE: SPEAK DIRECTLY TO THE CHILD
-        
-        You are speaking DIRECTLY to the child (using their name and details from the CHILD_PROFILE). 
-        * Talk directly to the child. Address them by their first name.
-        * Use second person ("you", "your", "yours"). Do NOT speak to a caregiver or offer caregiver/parent strategies.
-        * Do NOT use third person pronouns like "he", "she", "his", "her" when referring to the child.
-        * Use simple, age-appropriate, encouraging, warm, and friendly companion language.
-        * Help them feel safe, calm, and understood. Guide them through simple breathing/calming exercises, friendly stories, or simple child-friendly regulation games.
-        * Keep answers relatively concise and easy to read.
-        * Structure your responses with clear spacing, paragraphs, bolding, and simple lists to make it fun and legible for a child.
-        * ALWAYS conclude your message with a warm, open-ended, and engaging follow-up question to keep them talking to you!
-        """
-    else:
-        audience_directive = """
-        ## AUDIENCE DIRECTIVE: SPEAK TO THE CAREGIVER
-        
-        You are speaking to the caregiver, parent, educator, or clinician supporting a neurodivergent child.
-        * Provide warm, empathetic, clinical guide support and parenting/therapy advice.
-        * You can reference the child's profile and recommend daily strategies.
-        * Structure your responses clearly with paragraph spacing and bold key terms to make them scannable and practical.
-        * ALWAYS conclude your response with a supportive, clear follow-up question to guide the caregiver.
-        """
-
-    PROMPT_TEMPLATE = f"""
-        {audience_directive}
-
-This module intentionally avoids Python f-strings for the prompt body. LangChain
-uses `{context}` and `{question}` as runtime placeholders, so interpolating the
-prompt with an f-string can accidentally consume or break those placeholders.
-"""
-
 DEFAULT_CHILD_CONTEXT = "No active child profile context."
 DEFAULT_CAREGIVER_CONTEXT = "No caregiver profile context."
 DEFAULT_HISTORY_CONTEXT = "No prior messages in this chat yet."
@@ -205,12 +170,40 @@ __CAREGIVER_SECTION__
 
         Question: {question}
         Answer:
+"""
+
+def prompt_template_func(child_profile=None, caregiver_profile=None, speak_to_child=False):
+    # Determine dynamic audience directive
+    if speak_to_child:
+        audience_directive = """
+        ## AUDIENCE DIRECTIVE: SPEAK DIRECTLY TO THE CHILD
         
+        You are speaking DIRECTLY to the child (using their name and details from the CHILD_PROFILE). 
+        * Talk directly to the child. Address them by their first name.
+        * Use second person ("you", "your", "yours"). Do NOT speak to a caregiver or offer caregiver/parent strategies.
+        * Do NOT use third person pronouns like "he", "she", "his", "her" when referring to the child.
+        * Use simple, age-appropriate, encouraging, warm, and friendly companion language.
+        * Help them feel safe, calm, and understood. Guide them through simple breathing/calming exercises, friendly stories, or simple child-friendly regulation games.
+        * Keep answers relatively concise and easy to read.
+        * Structure your responses with clear spacing, paragraphs, bolding, and simple lists to make it fun and legible for a child.
+        * ALWAYS conclude your message with a warm, open-ended, and engaging follow-up question to keep them talking to you!
+        """
+    else:
+        audience_directive = """
+        ## AUDIENCE DIRECTIVE: SPEAK TO THE CAREGIVER
+        
+        You are speaking to the caregiver, parent, educator, or clinician supporting a neurodivergent child.
+        * Provide warm, empathetic, clinical guide support and parenting/therapy advice.
+        * You can reference the child's profile and recommend daily strategies.
+        * Structure your responses clearly with paragraph spacing and bold key terms to make them scannable and practical.
+        * ALWAYS conclude your response with a supportive, clear follow-up question to guide the caregiver.
         """
 
-    child_section = child_profile if child_profile else "No active child profile context."
-    caregiver_section = caregiver_profile if caregiver_profile else "No caregiver profile context."
+    child_section = child_profile if child_profile else DEFAULT_CHILD_CONTEXT
+    caregiver_section = caregiver_profile if caregiver_profile else DEFAULT_CAREGIVER_CONTEXT
     
-    template = PROMPT_TEMPLATE.replace("CHILD_PROFILE", f"CHILD_PROFILE:\n{child_section}")
-    template = template.replace("CAREGIVER_PROFILE", f"CAREGIVER_PROFILE:\n{caregiver_section}")
+    template = PROMPT_TEMPLATE.replace("__AUDIENCE_SECTION__", f"\n{audience_directive}")
+    template = template.replace("__CHILD_SECTION__", f"{child_section}")
+    template = template.replace("__CAREGIVER_SECTION__", f"{caregiver_section}")
+    
     return template
