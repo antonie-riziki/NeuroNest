@@ -79,14 +79,6 @@ __CAREGIVER_SECTION__
         6. Emotional support
         7. Clinical navigation support
 
-Retrieved knowledge context:
-{context}
-
-Question: {question}
-Answer:
-"""
-
-
         ### Sensory Processing
         * All 8 sensory systems
         * Sensory seeking / avoiding
@@ -209,9 +201,9 @@ Answer:
         This footer is mandatory and cannot be removed.
 
         END OF SYSTEM PROMPT
-        {{context}}
+        {context}
 
-        Question: {{question}}
+        Question: {question}
         Answer:
         
         """
