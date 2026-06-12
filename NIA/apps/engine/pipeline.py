@@ -55,6 +55,37 @@ _CHUNK_SIZE = 2000
 _CHUNK_OVERLAP = 200
 _RETRIEVAL_K = 4
 
+import time
+def _build_faiss_with_retry(splits, embeddings):
+    if not splits:
+        return None
+    vector_store = None
+    batch_size = 5
+    for i in range(0, len(splits), batch_size):
+        batch = splits[i:i + batch_size]
+        success = False
+        retries = 4
+        while not success and retries > 0:
+            try:
+                if vector_store is None:
+                    vector_store = FAISS.from_documents(batch, embeddings)
+                else:
+                    vector_store.add_documents(batch)
+                success = True
+            except Exception as e:
+                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                    print(f"Rate limited embedding batch. Waiting 15s... ({retries} retries left)")
+                    time.sleep(15)
+                    retries -= 1
+                else:
+                    raise e
+        if not success:
+            raise Exception("Failed to embed documents due to API rate limits after multiple retries.")
+        # Pause to respect per-minute quotas
+        if i + batch_size < len(splits):
+            time.sleep(2)
+    return vector_store
+
 def _write_index_version(db_path):
     pass # Placeholder if needed
 
@@ -83,7 +114,7 @@ def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, careg
                 
                 text_splitter = RecursiveCharacterTextSplitter(chunk_size=_CHUNK_SIZE, chunk_overlap=_CHUNK_OVERLAP)
                 splits = text_splitter.split_documents(docs)
-                vector_store = FAISS.from_documents(splits, embeddings)
+                vector_store = _build_faiss_with_retry(splits, embeddings)
                 vector_store.save_local(global_db_path)
                 _VECTOR_STORE_CACHE["global"] = vector_store
                 
@@ -105,7 +136,7 @@ def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, careg
                     if docs:
                         text_splitter = RecursiveCharacterTextSplitter(chunk_size=_CHUNK_SIZE, chunk_overlap=_CHUNK_OVERLAP)
                         splits = text_splitter.split_documents(docs)
-                        child_vs = FAISS.from_documents(splits, embeddings)
+                        child_vs = _build_faiss_with_retry(splits, embeddings)
                         child_vs.save_local(child_db_path)
                         _VECTOR_STORE_CACHE[child_cache_key] = child_vs
                     else:
@@ -129,7 +160,25 @@ def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, careg
             if docs:
                 text_splitter = RecursiveCharacterTextSplitter(chunk_size=_CHUNK_SIZE, chunk_overlap=_CHUNK_OVERLAP)
                 splits = text_splitter.split_documents(docs)
-                vector_store.add_documents(splits)
+                
+                # Dynamic direct embedding - no retry logic needed if it's a small upload, but we can just use add_documents
+                batch_size = 5
+                for i in range(0, len(splits), batch_size):
+                    batch = splits[i:i + batch_size]
+                    success = False
+                    retries = 3
+                    while not success and retries > 0:
+                        try:
+                            vector_store.add_documents(batch)
+                            success = True
+                        except Exception as e:
+                            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                                time.sleep(15)
+                                retries -= 1
+                            else:
+                                raise e
+                    if i + batch_size < len(splits):
+                        time.sleep(2)
 
         retriever = vector_store.as_retriever(search_kwargs={"k": _RETRIEVAL_K})
 
@@ -187,7 +236,7 @@ def update_vector_store_for_child(child_id):
         if docs:
             text_splitter = RecursiveCharacterTextSplitter(chunk_size=_CHUNK_SIZE, chunk_overlap=_CHUNK_OVERLAP)
             splits = text_splitter.split_documents(docs)
-            vector_store = FAISS.from_documents(splits, embeddings)
+            vector_store = _build_faiss_with_retry(splits, embeddings)
             vector_store.save_local(child_db_path)
             
             # Clear cache for this child so it gets reloaded
@@ -219,7 +268,7 @@ def update_global_vector_store():
 
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=_CHUNK_SIZE, chunk_overlap=_CHUNK_OVERLAP)
         splits = text_splitter.split_documents(docs)
-        vector_store = FAISS.from_documents(splits, embeddings)
+        vector_store = _build_faiss_with_retry(splits, embeddings)
         vector_store.save_local(global_db_path)
         
         # Clear global cache
