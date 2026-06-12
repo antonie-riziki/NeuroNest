@@ -179,7 +179,25 @@
             </button>
         </div>
     </header>
-    <main class="pt-20 pb-32 max-w-4xl mx-auto px-margin-mobile min-h-screen flex flex-col">
+    <main class="pt-20 pb-32 max-w-6xl mx-auto px-margin-mobile min-h-screen md:grid md:grid-cols-[280px_1fr] md:gap-6">
+        <aside class="mb-6 md:mb-0 md:sticky md:top-20 md:self-start bg-safe-white rounded-xl border border-warm-peach pill-shadow p-4">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="font-label-md text-label-md text-primary">Chat history</h2>
+                <a class="text-calm-teal font-label-sm text-label-sm underline" href="{% url 'chat' %}?new=1">New</a>
+            </div>
+            <div class="space-y-2 max-h-[45vh] overflow-y-auto pr-1">
+                {% for thread in chat_threads %}
+                <a href="{% url 'chat' %}?conversation={{ thread.id }}"
+                    class="block rounded-lg border px-3 py-2 transition-colors {% if active_thread.id == thread.id %}bg-secondary-container/40 border-secondary-fixed{% else %}bg-surface-container-low border-outline-variant/40 hover:bg-surface-container{% endif %}">
+                    <span class="block font-label-md text-label-md text-on-surface truncate">{{ thread.title }}</span>
+                    <span class="block font-label-sm text-label-sm text-on-surface-variant">Continue conversation</span>
+                </a>
+                {% empty %}
+                <p class="font-label-sm text-label-sm text-on-surface-variant">Your conversations will appear here.</p>
+                {% endfor %}
+            </div>
+        </aside>
+        <div class="min-w-0 flex flex-col">
         <!-- Child Profile Card -->
         <section class="mb-6">
             <div class="bg-safe-white rounded-xl p-5 border border-warm-peach pill-shadow flex items-start gap-4">
@@ -230,9 +248,19 @@
                 </div>
                 <div
                     class="bg-secondary-container/30 border border-secondary-fixed text-on-surface p-4 rounded-2xl rounded-bl-none shadow-sm">
-                    <p class="font-body-md text-body-md">Hello! I'm NIA, your personalized support assistant. I have loaded the profile for {{ active_child.name }}. How can I help you support them today?</p>
+                    <p class="font-body-md text-body-md">Hi {{ active_child.name }}! I'm NIA. I'm here to chat with you, help you understand big feelings, and find small steps that feel doable. What would you like to talk about today?</p>
                 </div>
             </div>
+            {% for message in active_thread.messages %}
+            <div class="flex items-end gap-3 max-w-[85%] {% if message.sender == 'user' %}self-end flex-row-reverse{% else %}self-start{% endif %} animate-fade-in">
+                <div class="w-8 h-8 rounded-full {% if message.sender == 'user' %}bg-surface-container-highest{% else %}bg-calm-teal{% endif %} flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined {% if message.sender == 'user' %}text-on-surface-variant{% else %}text-safe-white{% endif %} text-[16px]" data-icon="{% if message.sender == 'user' %}person{% else %}smart_toy{% endif %}"{% if message.sender != 'user' %} style="font-variation-settings: 'FILL' 1;"{% endif %}>{% if message.sender == 'user' %}person{% else %}smart_toy{% endif %}</span>
+                </div>
+                <div class="{% if message.sender == 'user' %}bg-safe-white border-warm-peach rounded-br-none{% else %}bg-secondary-container/30 border-secondary-fixed rounded-bl-none{% endif %} border text-on-surface p-4 rounded-2xl shadow-sm">
+                    <div class="font-body-md text-body-md chat-message">{{ message.text|linebreaksbr }}</div>
+                </div>
+            </div>
+            {% endfor %}
             <!-- NIA Thinking/Response Loading State -->
             <div class="flex items-end gap-3 max-w-[85%] self-start opacity-70 hidden" id="loading-state">
                 <div class="w-8 h-8 rounded-full bg-calm-teal flex items-center justify-center flex-shrink-0">
@@ -278,7 +306,7 @@
         </section>
         <!-- Input Area -->
         <section class="fixed bottom-24 left-0 w-full px-margin-mobile">
-            <div class="max-w-4xl mx-auto">
+            <div class="max-w-6xl mx-auto md:pl-[304px]">
                 <div
                     class="bg-safe-white rounded-full border-2 border-warm-peach p-1 flex items-center shadow-lg focus-within:border-soft-amber transition-all">
                     <button class="p-3 text-on-surface-variant hover:text-calm-teal">
@@ -311,6 +339,7 @@
                     href="#">Support</a>
             </div>
         </footer>
+        </div>
     </main>
     <!-- BottomNavBar -->
     <nav
@@ -337,6 +366,8 @@
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
         const loadingState = document.getElementById('loading-state');
+        let activeConversationId = '{{ active_thread.id }}';
+        let isSending = false;
 
         // Auto-scroll to bottom of page/container
         function scrollToBottom() {
@@ -346,6 +377,27 @@
             });
         }
         scrollToBottom();
+
+        function escapeHtml(value) {
+            return value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatMessage(text) {
+            const escaped = escapeHtml(text || '');
+            return escaped
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/(?:^|\n)([-*] .*(?:\n[-*] .*)*)/g, (match) => {
+                    const items = match.trim().split('\n').map(item => `<li>${item.replace(/^[-*] /, '')}</li>`).join('');
+                    return `<ul class="list-disc pl-5 my-2 space-y-1">${items}</ul>`;
+                })
+                .replace(/\n{2,}/g, '</p><p class="mt-3">')
+                .replace(/\n/g, '<br>');
+        }
 
         // Dynamic message appending
         function appendMessage(sender, text) {
@@ -357,7 +409,7 @@
                         <span class="material-symbols-outlined text-on-surface-variant text-[16px]" data-icon="person">person</span>
                     </div>
                     <div class="bg-safe-white border border-warm-peach text-on-surface p-4 rounded-2xl rounded-br-none shadow-sm">
-                        <p class="font-body-md text-body-md">${text}</p>
+                        <p class="font-body-md text-body-md">${formatMessage(text)}</p>
                     </div>
                 `;
             } else {
@@ -367,7 +419,7 @@
                         <span class="material-symbols-outlined text-safe-white text-[16px]" data-icon="smart_toy" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
                     </div>
                     <div class="bg-secondary-container/30 border border-secondary-fixed text-on-surface p-4 rounded-2xl rounded-bl-none shadow-sm">
-                        <p class="font-body-md text-body-md">${text}</p>
+                        <p class="font-body-md text-body-md">${formatMessage(text)}</p>
                     </div>
                 `;
             }
@@ -376,13 +428,32 @@
             scrollToBottom();
         }
 
+        function createRequestId() {
+            if (window.crypto && window.crypto.randomUUID) {
+                return window.crypto.randomUUID();
+            }
+            return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        }
+
+        function setSendingState(isBusy) {
+            isSending = isBusy;
+            sendBtn.disabled = isBusy;
+            chatInput.disabled = isBusy;
+            sendBtn.classList.toggle('opacity-60', isBusy);
+            sendBtn.classList.toggle('cursor-not-allowed', isBusy);
+        }
+
         // Send message function
         async function triggerSendMessage() {
+            if (isSending) return;
+
             const query = chatInput.value.trim();
             if (!query) return;
+            const requestId = createRequestId();
 
             // Clear input
             chatInput.value = '';
+            setSendingState(true);
 
             // Append user message
             appendMessage('user', query);
@@ -398,14 +469,19 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
-                    body: JSON.stringify({ message: query })
+                    body: JSON.stringify({
+                        message: query,
+                        conversation_id: activeConversationId,
+                        request_id: requestId
+                    })
                 });
                 const data = await response.json();
-                
+
                 // Hide typing indicator
                 loadingState.classList.add('hidden');
 
                 if (data.response) {
+                    activeConversationId = data.conversation_id || activeConversationId;
                     appendMessage('nia', data.response);
                 } else if (data.error) {
                     appendMessage('nia', "Error: " + data.error);
@@ -416,6 +492,9 @@
                 loadingState.classList.add('hidden');
                 appendMessage('nia', "Connection error. Please try again later.");
                 console.error("Error communicating with RAG engine:", error);
+            } finally {
+                setSendingState(false);
+                chatInput.focus();
             }
         }
 
