@@ -1,16 +1,11 @@
 import os
 import sys
-import glob
-import getpass
 import warnings
-from typing import List, Union
-from dotenv import load_dotenv
-from langchain_community.document_loaders import PyPDFLoader, CSVLoader
+from typing import Any, Iterable
 from langchain_core.prompts import PromptTemplate
+from langchain_core.retrievers import BaseRetriever
 from langchain_classic.chains import RetrievalQA
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
@@ -18,15 +13,136 @@ sys.path.insert(1, "./apps")
 
 
 from .ingestion import load_model, load_documents
-from .vector_store import create_vector_store
 from .prompt_builder import prompt_template_func
 
 warnings.filterwarnings("ignore")
 
 
+_DOC_EXTENSIONS = {'.pdf', '.csv', '.docx', '.doc', '.dot'}
+_INDEX_VERSION = 'rag-v2-chunk-2000-k3'
+_CHUNK_SIZE = 2000
+_CHUNK_OVERLAP = 200
+_RETRIEVAL_K = 3
+_MAX_CONTEXT_CHARS = 1800
+_VECTOR_STORE_CACHE = {}
 
 
-def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, caregiver_profile=None, child_id=None):
+class TruncatedRetriever(BaseRetriever):
+    """Limit retrieved chunk size before it is sent to the chat model."""
+
+    retriever: Any
+    max_chars: int = _MAX_CONTEXT_CHARS
+
+    def _get_relevant_documents(self, query, *, run_manager):
+        docs = self.retriever.invoke(query)
+        truncated_docs = []
+        for doc in docs:
+            content = doc.page_content or ''
+            if len(content) > self.max_chars:
+                content = f"{content[:self.max_chars]}..."
+            truncated_docs.append(Document(page_content=content, metadata=doc.metadata))
+        return truncated_docs
+
+
+def _knowledge_source_dirs(settings):
+    """Return every directory that should seed the global RAG knowledge base."""
+    candidate_dirs = [
+        os.path.join(settings.BASE_DIR, 'media', 'docs', 'global'),
+        os.path.join(settings.BASE_DIR, 'static', 'docs'),
+    ]
+    return [path for path in candidate_dirs if os.path.isdir(path)]
+
+
+def _load_documents_from_dirs(source_dirs: Iterable[str]):
+    docs = []
+    for source_dir in source_dirs:
+        docs.extend(load_documents(source_dir))
+    return docs
+
+
+def _vector_store_is_stale(db_path: str, source_dirs: Iterable[str]) -> bool:
+    index_file = os.path.join(db_path, 'index.faiss')
+    version_file = os.path.join(db_path, 'index.version')
+    if not os.path.exists(index_file):
+        return True
+    if os.path.exists(version_file):
+        try:
+            with open(version_file, encoding='utf-8') as saved_version:
+                if saved_version.read().strip() != _INDEX_VERSION:
+                    return True
+        except OSError:
+            return True
+    index_mtime = os.path.getmtime(index_file)
+    for source_dir in source_dirs:
+        for root, _dirs, files in os.walk(source_dir):
+            for file_name in files:
+                if os.path.splitext(file_name)[1].lower() in _DOC_EXTENSIONS:
+                    if os.path.getmtime(os.path.join(root, file_name)) > index_mtime:
+                        return True
+    return False
+
+
+def _write_index_version(db_path):
+    os.makedirs(db_path, exist_ok=True)
+    with open(os.path.join(db_path, 'index.version'), 'w', encoding='utf-8') as version_file:
+        version_file.write(_INDEX_VERSION)
+
+
+def _source_signature(source_dirs: Iterable[str]):
+    """Return a lightweight signature for knowledge files without parsing them."""
+    signature = []
+    for source_dir in source_dirs:
+        if not source_dir or not os.path.exists(source_dir):
+            continue
+        if os.path.isfile(source_dir):
+            paths = [source_dir]
+        else:
+            paths = []
+            for root, _dirs, files in os.walk(source_dir):
+                paths.extend(os.path.join(root, file_name) for file_name in files)
+
+        for file_path in paths:
+            if os.path.splitext(file_path)[1].lower() not in _DOC_EXTENSIONS:
+                continue
+            try:
+                stat = os.stat(file_path)
+            except OSError:
+                continue
+            signature.append((file_path, stat.st_mtime_ns, stat.st_size))
+    return tuple(sorted(signature))
+
+
+def _build_vector_store(db_path, docs, embeddings):
+    if not docs:
+        docs = [Document(page_content="NIA Global Knowledge Base - Neurodevelopmental and neurodiversity support platform developed by Beyond Brain Barriers.", metadata={"source": "system"})]
+
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=_CHUNK_SIZE, chunk_overlap=_CHUNK_OVERLAP)
+    splits = text_splitter.split_documents(docs)
+    vector_store = FAISS.from_documents(splits, embeddings)
+    vector_store.save_local(db_path)
+    _write_index_version(db_path)
+    return vector_store
+
+
+def _get_or_create_store(db_path, source_dirs, embeddings, docs_loader):
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    source_signature = _source_signature(source_dirs)
+    cache_key = (db_path, source_signature)
+    cached_store = _VECTOR_STORE_CACHE.get(cache_key)
+    if cached_store is not None:
+        return cached_store, source_signature
+
+    if os.path.exists(db_path) and not _vector_store_is_stale(db_path, source_dirs):
+        vector_store = FAISS.load_local(db_path, embeddings, allow_dangerous_deserialization=True)
+    else:
+        vector_store = _build_vector_store(db_path, docs_loader(), embeddings)
+
+    _VECTOR_STORE_CACHE.clear()
+    _VECTOR_STORE_CACHE[cache_key] = vector_store
+    return vector_store, source_signature
+
+
+def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, caregiver_profile=None, child_id=None, conversation_history=None, audience="caregiver"):
     """
     Create QA chain with proper error handling and personalization
     """
@@ -38,58 +154,65 @@ def get_qa_chain(source_dir=None, use_global_db=False, child_profile=None, careg
             model_type = "gemini"
             raise ValueError(f"Model {model_type} not configured properly")
 
-        vector_store = None
         global_db_path = os.path.join(settings.BASE_DIR, 'vector_store_db', 'global')
-        os.makedirs(os.path.dirname(global_db_path), exist_ok=True)
 
-        # 1. Initialize or load the global database
-        if os.path.exists(global_db_path):
-            vector_store = FAISS.load_local(global_db_path, embeddings, allow_dangerous_deserialization=True)
-        else:
-            global_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', 'global')
-            os.makedirs(global_docs_dir, exist_ok=True)
-            docs = load_documents(global_docs_dir)
-            if not docs:
-                docs = [Document(page_content="NIA Global Knowledge Base - Neurodevelopmental and neurodiversity support platform developed by Beyond Brain Barriers.", metadata={"source": "system"})]
-            
-            text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
-            splits = text_splitter.split_documents(docs)
-            vector_store = FAISS.from_documents(splits, embeddings)
-            vector_store.save_local(global_db_path)
+        # 1. Initialize or load the global database once per knowledge signature.
+        global_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', 'global')
+        os.makedirs(global_docs_dir, exist_ok=True)
+        source_dirs = _knowledge_source_dirs(settings)
+        vector_store, _global_signature = _get_or_create_store(
+            global_db_path,
+            source_dirs,
+            embeddings,
+            lambda: _load_documents_from_dirs(source_dirs),
+        )
 
         # 2. Load and merge child-specific database if in personalized mode
         if child_id:
             child_db_path = os.path.join(settings.BASE_DIR, 'vector_store_db', f'child_{child_id}')
             child_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', f'child_{child_id}')
             os.makedirs(child_docs_dir, exist_ok=True)
-            
+
             child_vector_store = None
-            if os.path.exists(child_db_path):
-                child_vector_store = FAISS.load_local(child_db_path, embeddings, allow_dangerous_deserialization=True)
-            else:
-                docs = load_documents(child_docs_dir)
-                if docs:
-                    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
-                    splits = text_splitter.split_documents(docs)
-                    child_vector_store = FAISS.from_documents(splits, embeddings)
-                    child_vector_store.save_local(child_db_path)
+            child_source_dirs = [child_docs_dir]
+            child_signature = _source_signature(child_source_dirs)
+            child_cache_key = (child_db_path, child_signature)
+            if child_signature:
+                child_vector_store = _VECTOR_STORE_CACHE.get(child_cache_key)
+                if child_vector_store is None:
+                    if os.path.exists(child_db_path) and not _vector_store_is_stale(child_db_path, child_source_dirs):
+                        child_vector_store = FAISS.load_local(child_db_path, embeddings, allow_dangerous_deserialization=True)
+                    else:
+                        docs = load_documents(child_docs_dir)
+                        if docs:
+                            child_vector_store = _build_vector_store(child_db_path, docs, embeddings)
+                    if child_vector_store is not None:
+                        _VECTOR_STORE_CACHE[child_cache_key] = child_vector_store
 
             if child_vector_store:
-                # Merge child documents into our vector store retrieval context
-                vector_store.merge_from(child_vector_store)
+                merged_cache_key = (global_db_path, _global_signature, child_db_path, child_signature)
+                merged_vector_store = _VECTOR_STORE_CACHE.get(merged_cache_key)
+                if merged_vector_store is None:
+                    merged_vector_store = FAISS.load_local(global_db_path, embeddings, allow_dangerous_deserialization=True)
+                    merged_vector_store.merge_from(child_vector_store)
+                    _VECTOR_STORE_CACHE[merged_cache_key] = merged_vector_store
+                vector_store = merged_vector_store
 
-        # 3. Add dynamic source directory docs if passed directly
+        # 3. Add dynamic source directory docs if passed directly.
+        # This path is intentionally uncached because uploads already rebuild stores explicitly.
         if source_dir:
             docs = load_documents(source_dir)
             if docs:
-                text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
+                text_splitter = RecursiveCharacterTextSplitter(chunk_size=_CHUNK_SIZE, chunk_overlap=_CHUNK_OVERLAP)
                 splits = text_splitter.split_documents(docs)
                 vector_store.add_documents(splits)
 
-        retriever = vector_store.as_retriever(search_kwargs={"k": 5})
+        retriever = TruncatedRetriever(
+            retriever=vector_store.as_retriever(search_kwargs={"k": _RETRIEVAL_K})
+        )
 
         prompt = PromptTemplate(
-            template=prompt_template_func(child_profile, caregiver_profile),
+            template=prompt_template_func(child_profile, caregiver_profile, conversation_history, audience),
             input_variables=["context", "question"]
         )
 
@@ -118,8 +241,8 @@ def query_system(query: str, qa_chain):
     try:
         result = qa_chain({"query": query})
         if not result["result"] or "don't know" in result["result"].lower():
-            return "The answer could not be found in the provided documents"
-        return f"NIA: {result['result']}"
+            return "I don't have enough information to answer confidently yet. Could you tell me a little more about what is happening?"
+        return result['result']
     except Exception as e:
         return f"Error processing query: {e}"
 
@@ -140,10 +263,12 @@ def update_vector_store_for_child(child_id):
 
         docs = load_documents(child_docs_dir)
         if docs:
-            text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=_CHUNK_SIZE, chunk_overlap=_CHUNK_OVERLAP)
             splits = text_splitter.split_documents(docs)
             vector_store = FAISS.from_documents(splits, embeddings)
             vector_store.save_local(child_db_path)
+            _write_index_version(child_db_path)
+            _VECTOR_STORE_CACHE.clear()
             return True
     except Exception as e:
         print(f"Error updating child vector store: {e}")
@@ -164,14 +289,16 @@ def update_global_vector_store():
         global_docs_dir = os.path.join(settings.BASE_DIR, 'media', 'docs', 'global')
         os.makedirs(global_docs_dir, exist_ok=True)
 
-        docs = load_documents(global_docs_dir)
+        docs = _load_documents_from_dirs(_knowledge_source_dirs(settings))
         if not docs:
             docs = [Document(page_content="NIA Global Knowledge Base - Neurodevelopmental and neurodiversity support platform developed by Beyond Brain Barriers.", metadata={"source": "system"})]
-            
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=200)
+
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=_CHUNK_SIZE, chunk_overlap=_CHUNK_OVERLAP)
         splits = text_splitter.split_documents(docs)
         vector_store = FAISS.from_documents(splits, embeddings)
         vector_store.save_local(global_db_path)
+        _write_index_version(global_db_path)
+        _VECTOR_STORE_CACHE.clear()
         return True
     except Exception as e:
         print(f"Error updating global vector store: {e}")
