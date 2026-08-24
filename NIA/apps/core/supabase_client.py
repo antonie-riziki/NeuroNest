@@ -50,6 +50,10 @@ class SupabaseClient:
             except Exception:
                 err_msg = err_data.decode('utf-8') or str(e)
             raise Exception(err_msg)
+        except urllib.error.URLError as e:
+            if "Name or service not known" in str(e) or "gaierror" in str(e):
+                raise Exception("Unable to reach Supabase project host. Please verify that your SUPABASE_URL is correct and that your Supabase project is active (not paused or deleted).")
+            raise Exception(f"Network error connecting to Supabase: {e.reason}")
         except Exception as e:
             raise Exception(str(e))
 
