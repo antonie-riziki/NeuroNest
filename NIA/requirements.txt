@@ -16,3 +16,4 @@ pypdf
 django
 django-cors-headers
 gunicorn
+whitenoise
