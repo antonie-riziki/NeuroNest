@@ -24,7 +24,7 @@ def _summarize_history(messages, limit=10):
     recent = messages[-limit:]
     lines = []
     for message in recent:
-        role = 'Child' if message.get('sender') == 'user' else 'NIA'
+        role = 'Child' if message.get('sender') == 'user' else 'Niyaa'
         text = message.get('text', '').strip()
         if text:
             lines.append(f"{role}: {text}")
@@ -36,6 +36,7 @@ def _new_chat_thread(child_name):
         'id': uuid.uuid4().hex,
         'title': f"Chat with {child_name}",
         'messages': [],
+        'processed_requests': {},
     }
 
 def knowledgebase(request):
@@ -220,11 +221,20 @@ def chat(request):
             body = json.loads(request.body)
             query = body.get('message', '').strip()
             conversation_id = body.get('conversation_id')
+            request_id = body.get('request_id')
         except Exception:
             return JsonResponse({'error': 'Invalid request payload'}, status=400)
 
         if not query:
             return JsonResponse({'error': 'Query cannot be empty'}, status=400)
+
+        # The browser may retry a request after a slow Render/Gemini response.
+        # Return the original payload instead of generating a duplicate message.
+        if request_id:
+            for thread in child_threads:
+                cached_response = thread.get('processed_requests', {}).get(request_id)
+                if cached_response:
+                    return JsonResponse(cached_response)
 
         for thread in child_threads:
             if thread.get('id') == conversation_id:
@@ -248,7 +258,7 @@ def chat(request):
             caregiver_profile=caregiver_profile_str,
             child_id=str(active_child.get('id')),
             conversation_history=conversation_history,
-            audience='child'
+            audience='caregiver'
         )
         response = query_system(query, qa_chain)
 
@@ -260,11 +270,14 @@ def chat(request):
         child_threads.insert(0, active_thread)
         request.session.modified = True
 
-        return JsonResponse({
+        response_payload = {
             'response': response,
             'conversation_id': active_thread.get('id'),
             'title': active_thread.get('title'),
-        })
+        }
+        if request_id:
+            active_thread.setdefault('processed_requests', {})[request_id] = response_payload
+        return JsonResponse(response_payload)
 
     context = {
         'active_child': active_child,
@@ -273,4 +286,3 @@ def chat(request):
         'active_thread': active_thread,
     }
     return render(request, 'chatbot.html', context)
-

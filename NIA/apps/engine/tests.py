@@ -47,6 +47,17 @@ class PromptBuilderTests(TestCase):
         self.assertLess(prompt.index('Required footer:'), prompt.index('Question: {question}'))
         self.assertTrue(prompt.rstrip().endswith('Answer:'))
 
+    def test_prompt_includes_condition_specific_recommendation_guidance(self):
+        prompt = prompt_template_func(
+            child_profile='Name: Amina, Concern/Diagnosis: ADHD and sensory seeking',
+            audience='caregiver',
+        )
+
+        self.assertIn('ADHD or attention and impulse-regulation needs', prompt)
+        self.assertIn('short, movement-rich activities', prompt)
+        self.assertIn('Sensory processing differences', prompt)
+        self.assertIn('lower- and higher-sensory options', prompt)
+
 
 class ChatViewTests(TestCase):
     def setUp(self):

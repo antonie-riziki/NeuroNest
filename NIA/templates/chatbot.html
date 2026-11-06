@@ -7,6 +7,8 @@
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Niyaa - Chat Assistant</title>
+    <link rel="icon" type="image/png" href="{% static 'img/qiotter-logo.png' %}" />
+    <meta name="theme-color" content="#fff8f0" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Work+Sans:wght@400;500;600&amp;display=swap"
@@ -222,6 +224,7 @@
                             Profile</span>
                     </div>
                     <div class="grid grid-cols-2 gap-y-2 gap-x-4">
+                        <p class="col-span-2 text-xs text-calm-teal" aria-label="profile ready">Profile ready for personalized guidance.</p>
                         <div class="flex items-center gap-2">
                             <span class="material-symbols-outlined text-calm-teal text-[18px]"
                                 data-icon="cake">cake</span>
@@ -473,7 +476,11 @@
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
-                    body: JSON.stringify({ message: query, conversation_id: activeConversationId })
+                    body: JSON.stringify({
+                        message: query,
+                        conversation_id: activeConversationId,
+                        request_id: requestId,
+                    })
                 });
                 const data = await response.json();
 
