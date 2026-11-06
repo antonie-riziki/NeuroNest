@@ -244,7 +244,7 @@
         </section>
         <!-- Chat Area -->
         <section class="flex-grow flex flex-col space-y-4 mb-6" id="chat-container">
-            <!-- NIA Message -->
+            <!-- Niyaa Message -->
             <div class="flex items-end gap-3 max-w-[85%] self-start animate-fade-in">
                 <div class="w-8 h-8 rounded-full bg-calm-teal flex items-center justify-center flex-shrink-0">
                     <span class="material-symbols-outlined text-safe-white text-[16px]" data-icon="smart_toy"
@@ -252,7 +252,7 @@
                 </div>
                 <div
                     class="bg-secondary-container/30 border border-secondary-fixed text-on-surface p-4 rounded-2xl rounded-bl-none shadow-sm">
-                    <p class="font-body-md text-body-md">Hi {{ active_child.name }}! I'm NIA. I'm here to chat with you, help you understand big feelings, and find small steps that feel doable. What would you like to talk about today?</p>
+                    <p class="font-body-md text-body-md">Hi {{ active_child.name }}! I'm Niyaa. I'm here to chat with you, help you understand big feelings, and find small steps that feel doable. What would you like to talk about today?</p>
                 </div>
             </div>
             {% for message in active_thread.messages %}
@@ -265,7 +265,7 @@
                 </div>
             </div>
             {% endfor %}
-            <!-- NIA Thinking/Response Loading State -->
+            <!-- Niyaa Thinking/Response Loading State -->
             <div class="flex items-end gap-3 max-w-[85%] self-start opacity-70 hidden" id="loading-state">
                 <div class="w-8 h-8 rounded-full bg-calm-teal flex items-center justify-center flex-shrink-0">
                     <span class="material-symbols-outlined text-safe-white text-[16px]" data-icon="smart_toy"
@@ -319,7 +319,7 @@
                     <input
                         id="chat-input"
                         class="flex-grow bg-transparent border-none focus:ring-0 px-2 font-body-md placeholder:text-outline/60"
-                        placeholder="Type a message for NIA..." type="text" />
+                        placeholder="Type a message for Niyaa..." type="text" />
                     <button
                         id="send-btn"
                         class="bg-calm-teal text-safe-white px-6 py-2 rounded-full font-label-md text-label-md flex items-center gap-2 hover:bg-secondary transition-colors mr-1">
@@ -334,7 +334,7 @@
         <footer
             class="w-full flex flex-col items-center gap-2 pt-4 pb-20 px-margin-mobile bg-transparent opacity-80 mt-auto">
             <p class="font-label-sm text-label-sm text-center text-on-surface-variant">
-                NIA is an AI assistant, not a medical professional. Always consult a specialist for clinical advice.
+                Niyaa is an AI assistant, not a medical professional. Always consult a specialist for clinical advice.
             </p>
             <div class="flex gap-4">
                 <a class="font-label-sm text-label-sm text-on-surface-variant underline hover:text-primary"

@@ -8,7 +8,7 @@
 
 **Niyaa** is Qiotter's AI-driven, evidence-based neurodiversity support microservice. It provides personalized, context-aware guidance and knowledge retrieval for caregivers, parents, educators, and clinicians supporting neurodivergent children.
 
-By combining multi-tenant personalized Retrieval-Augmented Generation (RAG) with adaptive audience prompting, NIA delivers tailored advice while adhering strictly to clinical safety boundaries and ethical guidelines.
+By combining multi-tenant personalized Retrieval-Augmented Generation (RAG) with adaptive audience prompting, Niyaa delivers tailored advice while adhering strictly to clinical safety boundaries and ethical guidelines.
 
 ---
 
