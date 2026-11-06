@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 
 <html class="light" lang="en">
@@ -5,7 +6,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Welcome to NIA | Gentle Guidance</title>
+    <title>Welcome to Niyaa | Qiotter</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
@@ -164,10 +165,13 @@
     <!-- Top Navigation Shell (Limited for Auth) -->
     <header
         class="fixed top-0 left-0 w-full z-50 flex justify-center items-center px-margin-mobile h-touch-target-min bg-surface-container-low shadow-sm">
-        <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-calm-teal"
-                style="font-variation-settings: 'FILL' 1;">clinical_notes</span>
-            <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-calm-teal tracking-tight">NIA</h1>
+        <div class="flex items-center gap-3">
+            <img src="{% static 'img/qiotter-logo.png' %}" alt="Qiotter - Minds of all kinds"
+                class="h-10 w-12 object-contain rounded-md" />
+            <div class="leading-tight text-left">
+                <h1 class="font-headline-lg-mobile text-headline-lg-mobile text-calm-teal tracking-tight">Niyaa</h1>
+                <p class="text-xs text-on-surface-variant">A Qiotter microservice</p>
+            </div>
         </div>
     </header>
     <!-- Hero Background Atmosphere (Subtle animated blur) -->
@@ -377,7 +381,7 @@
         <div class="mt-12 p-4 bg-tertiary-fixed/30 rounded-xl border border-tertiary-fixed text-center">
             <p class="font-label-sm text-label-sm text-on-tertiary-fixed-variant leading-relaxed">
                 <span class="material-symbols-outlined align-middle mr-1 text-[16px]">info</span>
-                NIA provides educational support and does not replace clinical advice.
+            Niyaa provides educational support and does not replace clinical advice.
             </p>
         </div>
     </main>
@@ -385,7 +389,7 @@
     <footer
         class="w-full flex flex-col items-center gap-2 pt-4 pb-20 px-margin-mobile bg-transparent opacity-80 mt-auto">
         <p class="font-label-sm text-label-sm text-on-surface-variant text-center max-w-sm">
-            NIA is an AI assistant, not a medical professional. Always consult a specialist for clinical advice.
+            Niyaa is an AI assistant, not a medical professional. Always consult a specialist for clinical advice.
         </p>
         <div class="flex gap-6">
             <a class="font-label-sm text-label-sm text-on-surface-variant underline hover:text-calm-teal"
@@ -393,7 +397,7 @@
             <a class="font-label-sm text-label-sm text-on-surface-variant underline hover:text-calm-teal"
                 href="#">Support</a>
         </div>
-        <p class="font-label-sm text-label-sm text-on-surface-variant mt-2">© {% now 'Y' %} NIA Neurodiversity Assistant
+        <p class="font-label-sm text-label-sm text-on-surface-variant mt-2">© {% now 'Y' %} Niyaa, a Qiotter microservice
         </p>
     </footer>
     <script>

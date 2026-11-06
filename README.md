@@ -1,4 +1,4 @@
-# NeuroNest Intelligence Assistant (NIA)
+# Niyaa — Qiotter Neurodiversity Microservice
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/Django-6.0-green.svg)](https://www.djangoproject.com/)
@@ -6,7 +6,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Backend-emerald.svg)](https://supabase.com/)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-Flash%20Lite-blueviolet.svg)](https://ai.google.dev/)
 
-**NeuroNest Intelligence Assistant (NIA)** is an AI-driven, evidence-based neurodiversity support platform. It provides personalized, context-aware guidance and knowledge retrieval for caregivers, parents, educators, and clinicians supporting neurodivergent children.
+**Niyaa** is Qiotter's AI-driven, evidence-based neurodiversity support microservice. It provides personalized, context-aware guidance and knowledge retrieval for caregivers, parents, educators, and clinicians supporting neurodivergent children.
 
 By combining multi-tenant personalized Retrieval-Augmented Generation (RAG) with adaptive audience prompting, NIA delivers tailored advice while adhering strictly to clinical safety boundaries and ethical guidelines.
 

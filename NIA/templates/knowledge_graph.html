@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 
 <html class="light" lang="en">
@@ -5,7 +6,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>NIA Admin - Knowledge Input</title>
+    <title>Niyaa Admin - Knowledge Input</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
@@ -150,9 +151,13 @@
     <!-- TopAppBar -->
     <header
         class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile h-touch-target-min bg-surface-container-low shadow-sm rounded-b-xl">
-        <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-calm-teal">clinical_notes</span>
-            <span class="font-headline-lg-mobile text-headline-lg-mobile text-calm-teal">NIA</span>
+        <div class="flex items-center gap-3">
+            <img src="{% static 'img/qiotter-logo.png' %}" alt="Qiotter - Minds of all kinds"
+                class="h-10 w-12 object-contain rounded-md" />
+            <div class="leading-tight">
+                <span class="font-headline-lg-mobile text-headline-lg-mobile text-calm-teal">Niyaa</span>
+                <p class="text-xs text-on-surface-variant">Qiotter microservice</p>
+            </div>
         </div>
         <div class="hidden md:flex items-center gap-8">
             <a class="font-label-md text-label-md text-on-surface-variant hover:text-calm-teal transition-colors"

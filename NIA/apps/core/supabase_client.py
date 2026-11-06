@@ -3,12 +3,18 @@ import ssl
 import urllib.request
 import urllib.error
 import uuid
+import os
 from django.conf import settings
 
 class SupabaseClient:
     def __init__(self):
-        self.url = getattr(settings, 'SUPABASE_URL', '')
-        self.key = getattr(settings, 'SUPABASE_KEY', '')
+        self.url = getattr(settings, 'SUPABASE_URL', '') or os.getenv('SUPABASE_URL', '')
+        self.key = (
+            getattr(settings, 'SUPABASE_PUBLISHABLE_KEY', '')
+            or getattr(settings, 'SUPABASE_KEY', '')
+            or os.getenv('SUPABASE_PUBLISHABLE_KEY', '')
+            or os.getenv('SUPABASE_KEY', '')
+        )
 
     def _request(self, method, path, headers=None, body=None, is_json=True, raw_data=None):
         if not self.url or not self.key:
